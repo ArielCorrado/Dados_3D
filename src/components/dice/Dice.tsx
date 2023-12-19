@@ -1,0 +1,403 @@
+import "./dice.css";
+import { useEffect } from "react";
+
+function Dice () {
+
+    useEffect(() => {
+        
+        /********************** Generamos un dado al azar ***************************/
+        
+        // const setRandomDice = () => {
+        //     const random1n = (n: number) => Math.floor(Math.random() * n) + 1;                          //Generamos un numero aleatorio entre 1 y n (1 y n incluidos)
+            
+        //     const diceSidesHTML : NodeListOf<HTMLDivElement> = document.querySelectorAll(".diceSideExternal");
+        //     const diceSidesArr = Array.from(diceSidesHTML);
+        //     const diceMap: number[] = [];                                                               // "el array "diceMap" contendra los numeros de cada cara del dado 
+
+        //     let diceRef = [1,2,3,4,5,6]    
+        
+        //     for (let i = 0; i <= 2; i++) {
+        //         const randomIndex = random1n(diceRef.length) - 1;
+        //         diceMap[i] = diceRef[randomIndex];                                                       // El numero de la primera cara del dado se elige aleatoriamente en el array "diceRef" 
+        //         diceMap[5 - i] = Math.abs(diceMap[i] - 7);                                               // El indice de la cara opuesta es (5 - i) y su numero el absoluto del numero hallado en la linea anterior menos 7    
+        //         diceRef = diceRef.filter(item => item !== diceMap[i] && item !== diceMap[5 - i]);        // Eliminamos del array "diceRef" los numeros ya asignados 
+        //     }   
+
+        //     diceMap.forEach((item, index) => {
+        //         diceSidesArr[index].style.backgroundImage = (`url(/images/dice/${diceMap[index]}.png)`); // Asignamos a cada cara la imagen correspondiente 
+        //     })
+        // }
+      
+        /**************************************************************/
+
+        const diceSize = 100;                                                                           // El ancho del dado (en px) tiene que coincidir con el del css
+
+        let isMouseDown = false;
+        let isMouseOver = false;
+        const motionLog: {x: number, y: number, t: number}[] = new Array(5);
+        for (let i = 0; i < motionLog.length; i++) {
+            motionLog[i] = {x: 0, y: 0, t: 0};
+        }
+                 
+        const dice : HTMLDivElement | null = document.querySelector(".dice");
+        const diceAnimateCont : HTMLDivElement | null = document.querySelector(".diceAnimateCont");
+        const diceAutoTurnAnimation = document.querySelector(".diceAutoTurnAnimation")?.getAnimations()[0];
+        const diceSideExternals = document.querySelectorAll(".diceSideExternal");
+            
+        const pointerdown = (e: any) => {
+            diceAutoTurnAnimation?.pause();
+            const diceAnimations = dice?.getAnimations();
+            diceAnimations?.forEach((animation) => {
+                animation.cancel();
+            })
+            dice!.style.left = `${e.clientX - (diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
+            dice!.style.top = `${e.clientY - (diceSize / 2)}px`;
+            isMouseDown = true;
+        }
+        
+        const pointerup = () => {                                                                      //Se entra a esta funcion al soltar el dado
+            if (isMouseOver) {                                                                         // y si el cursor esta sobre el
+                if (motionLog[4].x - motionLog[0].x !== 0 || motionLog[4].y - motionLog[0].y !== 0) {  //Verificamos que hayamos movido el dado (al menos en x o en y) para poder arrojarlo
+                                   
+                    // setRandomDice();
+                    diceAnimateCont?.classList.remove("diceAutoTurnAnimation");                          
+                    document.getAnimations().forEach(animation => {
+                        animation.cancel();
+                    })
+
+                    const velocityVector = {x: 0, y: 0};
+                    const setVelocityVector = (x: number, y: number) => {
+                        velocityVector.x = x;
+                        velocityVector.y = y;
+                    }
+
+                    const Axi = motionLog[4].x - motionLog[0].x;
+                    const Ayi = motionLog[4].y - motionLog[0].y;
+                    const At = motionLog[4].t - motionLog[0].t;
+                    let Vxi = Axi/At;        // px/ms
+                    let Vyi = Ayi/At;        // px/ms
+                    setVelocityVector(Vxi, Vyi);
+                    const Vi = Math.sqrt((velocityVector.x ** 2) + (velocityVector.y ** 2));
+                    
+                    const stopVelocity = 0.575;
+                    const aceleration = - 0.005;
+                    let motionDuration = Math.abs((stopVelocity - Vi) / aceleration);                                             //La duracion del movimiento del dato hasta que se queda quieto es proporcional a la velocidad de tiro
+                    let oneTurnDuration = (4 * diceSize) / Vi;   
+                    
+                    let diceMoveAnimation : Animation | undefined;
+                    let diceTurnAnimation : Animation | undefined;
+                                                            
+                    /**************** Limitador de velocidad de tiro ***************/
+                    const Vmax = 3;
+                    if (Math.abs(velocityVector.x) >= Math.abs(velocityVector.y)) {
+                        if (Math.abs(velocityVector.x) > Vmax) {
+                            const Vxi = velocityVector.x;
+                            const VxSign = Math.abs(velocityVector.x) / velocityVector.x;
+                            velocityVector.x = Vmax * VxSign;
+                            velocityVector.y = (Math.abs(Vmax / Vxi)) * velocityVector.y
+                        }
+                    } else {
+                        if (Math.abs(velocityVector.y) > Vmax) {
+                            const Vyi = velocityVector.y;
+                            const VySign = Math.abs(velocityVector.y) / velocityVector.y;
+                            velocityVector.y = Vmax * VySign;
+                            velocityVector.x = (Math.abs(Vmax / Vyi)) * velocityVector.x
+                        }
+                    }
+                                         
+                    const getCurrentYRotation = (): number => {            //Obtiene el angulo de rotacion en el eje y actual
+                        const computedStyle = getComputedStyle(diceAnimateCont!);
+                        const transformMatrix = new DOMMatrix(computedStyle.transform);
+                        const rotateYAngle = Math.atan2(transformMatrix.m13, transformMatrix.m33) * (180 / Math.PI);
+                        return rotateYAngle; // Return the Y rotation angle in degrees
+                    }
+                                       
+                    const stopDegreesTolerance = 5;
+                    const stopControl = () => {
+                        if (getVelocity() < stopVelocity) {
+                            const actualYrotation = getCurrentYRotation();
+                            if (
+                                (Math.abs(actualYrotation) % 90 <= stopDegreesTolerance) || 
+                                (Math.abs(actualYrotation) < 90 && Math.abs(actualYrotation) >= (90 - stopDegreesTolerance)) //Incluimos angulos menores y cercanos a 90º como 85º que  no son "detectados" por el algoritmo con "%"
+                            ) {
+                                setTimeout(() => {
+                                    clearInterval(controlIntervalId);
+                                    clearInterval(playBakcRateIntervalId);
+                                }, 100);
+                                diceTurnAnimation?.pause();
+                                diceMoveAnimation?.pause();
+                            } 
+                        } else if (Vi < 1.1) {
+                            // diceTurnAnimation?.pause();
+                        }
+                    }
+                                        
+                    const decelerationFuncMin = (stopVelocity / Vi);                                //La funcion de desaceleracion no tiene que hacer descender la velocidad por debajo
+                    const decelerationFuncAdjust = decelerationFuncMin * 0.9;                       // de stopVelocity para que el dado no se pare entes de que actue el "stopControl"
+                    const decelerationFunc = (t: number) : number => {                              //Funcion de desaceleracion (su valor inicial es 1 --> (t = 0))
+                        const result = (((stopVelocity - Vi) / (Vi * motionDuration)) * t) + 1;
+                        return result >= decelerationFuncMin ? result : decelerationFuncAdjust;
+                    }
+                                        
+                    const playBackRateUpdate = () => {
+                        const t = Date.now() - ti;
+                        if (diceTurnAnimation && diceMoveAnimation) {
+                            diceTurnAnimation.playbackRate = decelerationFunc(t);
+                            diceMoveAnimation.playbackRate = decelerationFunc(t);
+                        }
+                    }
+                                       
+                    const getPosition = () => {
+                        const diceRect = dice?.getBoundingClientRect();
+                        const x = diceRect!.left + (diceSize / 2);
+                        const y = diceRect!.top + (diceSize / 2);
+                        return {x: Math.floor(x),y: Math.floor(y)};
+                    }
+
+                    const setPosition = (x: number, y: number) => {
+                        diceMoveAnimation?.cancel();
+                        dice!.style.left =`${x - (diceSize/2)}px`;
+                        dice!.style.top = `${y - (diceSize/2)}px`;
+                    }
+
+                    const getVelocityVector = () => {
+                        const t = Date.now() - ti;
+                        const Vx = velocityVector.x * decelerationFunc(t);
+                        const Vy = velocityVector.y * decelerationFunc(t);
+                        return {x: Vx , y: Vy};
+                    }
+                    
+                    const getVelocity = () => Math.sqrt(getVelocityVector().x**2 + getVelocityVector().y**2);
+                       
+                    const getSideDistance = {           /* Calcula la distancia del dado a un determinado borde de la ventana visual (window) */
+                        left: () => {
+                            const sides = diceSideExternals;
+                            const sidesArr = Array.from(sides)
+                            const sidesLeft = sidesArr.map((side) => side.getBoundingClientRect().left)
+                            return Math.min(...sidesLeft);
+                        },
+                        right: () => {
+                            const sides = diceSideExternals;
+                            const sidesArr = Array.from(sides)
+                            const sidesRight = sidesArr.map((side) => window.innerWidth - side.getBoundingClientRect().right)
+                            return Math.min(...sidesRight);
+                        },
+                        top: () => {
+                            const sides = diceSideExternals;
+                            const sidesArr = Array.from(sides)
+                            const sidesTop = sidesArr.map((side) => side.getBoundingClientRect().top)
+                            return Math.min(...sidesTop);
+                        },
+                        bottom: () => {
+                            const sides = diceSideExternals;
+                            const sidesArr = Array.from(sides)
+                            const sidesBottom = sidesArr.map((side) => window.innerHeight - side.getBoundingClientRect().bottom)
+                            return Math.min(...sidesBottom);
+                        }
+                    }
+
+                    const setDiceTurnAnimation2 = (currentYRotation: number) => {       /* Animacion de rotacion del dado */
+                        const reboundDirectionVector = { x: getVelocityVector().x, y: getVelocityVector().y };
+                        const reboundgAngle = Math.floor(Math.atan2(reboundDirectionVector.y, reboundDirectionVector.x) * 180 / Math.PI);     //Angulo de tiro
+                        diceTurnAnimation = diceAnimateCont?.animate([
+                            // keyframes
+                            { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation}deg) rotateX(0) translateZ(${diceSize / 2}px) translateX(${-(diceSize / 2)}px)` },
+                            { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation + 360}deg) rotateX(0) translateZ(${diceSize / 2}px) translateX(${-(diceSize / 2)}px)` }
+                        ], {
+                            // timing options
+                            duration: oneTurnDuration,
+                            iterations: Infinity,
+                            fill: "forwards",
+                            easing: "linear"
+                        });
+                    }
+                                                                                         
+                    const setDiceMoveAnimation = (V: number, Vx: number, Vy: number) => {      /* Animacion de translacion del dado */
+                      
+                        const timeLeft = motionDuration;
+                        const reboundAx = Vx * timeLeft ;
+                        const reboundAy = Vy * timeLeft ;
+                        
+                        diceMoveAnimation = dice?.animate([
+                            // keyframes
+                            { transform: `translateX(0) translateY(0)` },
+                            { transform: `translateX(${reboundAx}px) translateY(${reboundAy}px)` }
+                        ], {
+                            // timing options
+                            duration: timeLeft,
+                            fill: "forwards",
+                            easing: "ease-out"
+                        });
+                    }
+                                
+                    const ti = Date.now();
+                    const playBakcRateIntervalId = setInterval(() => {
+                        playBackRateUpdate();
+                    }, 10);
+                    oneTurnDuration = ((4 * diceSize) / Vi);
+                    setDiceTurnAnimation2(getCurrentYRotation());
+                    setDiceMoveAnimation(Vi, Vxi, Vyi);
+                                                                                        
+                    let isReboundLeft = false;
+                    let isReboundRight = false;
+                    let isReboundTop = false;
+                    let isReboundBottom = false;
+
+                    const fastReboundVelocity = 1;
+                    type SideRebound = "left" | "right" | "top" | "bottom" | null;
+                    let reboundSide : SideRebound = null;
+                    
+                    const reboundControl = () => {
+                        next = false;
+
+                        if (getSideDistance.left() <= 0 && !isReboundLeft) {
+                            reboundSide = "left"
+                        } else if (getSideDistance.right() <= 0 && !isReboundRight) {
+                            reboundSide = "right";
+                        } else if (getSideDistance.top() <= 0 && !isReboundTop) {
+                            reboundSide = "top";
+                        } else if (getSideDistance.bottom() <= 0 && !isReboundBottom) {
+                            reboundSide = "bottom";
+                        } else {
+                            reboundSide = null;
+                        }
+                        
+                        if (reboundSide) {
+                            const impactPosition = {x: getPosition().x, y: getPosition().y};
+                            const impactCurrentYRotation = getCurrentYRotation();
+                            const impactVelocityVector = {x: getVelocityVector().x, y: getVelocityVector().y};
+                            const impactVelocity = getVelocity();
+                            oneTurnDuration = ((4 * diceSize) / impactVelocity);
+                            if (impactVelocity < fastReboundVelocity && impactVelocity > stopVelocity) oneTurnDuration = ((4 * diceSize) / (impactVelocity * 1.75)); //Giro mas rapido al rebotar a menos de "fastReboundVelocity". 
+                                                        
+                            if (reboundSide === "left" || reboundSide === "right") {
+                                if (impactVelocity >= stopVelocity) {    
+                                    setPosition(impactPosition.x, impactPosition.y);  
+                                    setVelocityVector(-impactVelocityVector.x, impactVelocityVector.y);
+                                    diceTurnAnimation?.cancel();
+                                    diceMoveAnimation?.cancel();
+                                    setDiceTurnAnimation2(impactCurrentYRotation);
+                                    setDiceMoveAnimation(impactVelocity, -impactVelocityVector.x, impactVelocityVector.y);
+                                } else {                                                                                        //Rebote sin girar a menos de "stopVelocity"
+                                    setPosition(impactPosition.x, impactPosition.y);  
+                                    setVelocityVector(-impactVelocityVector.x, impactVelocityVector.y);
+                                    diceMoveAnimation?.cancel();
+                                    setDiceMoveAnimation(impactVelocity, -impactVelocityVector.x, impactVelocityVector.y);
+                                }   
+                                if (reboundSide === "left") {
+                                    isReboundRight = false;                             
+                                    isReboundLeft = true;
+                                } else {
+                                    isReboundRight = true;
+                                    isReboundLeft = false;
+                                }
+                            } else if (reboundSide === "top" || reboundSide === "bottom") {
+                                if (impactVelocity >= stopVelocity) {    
+                                    setPosition(impactPosition.x, impactPosition.y);  
+                                    setVelocityVector(impactVelocityVector.x, -impactVelocityVector.y);
+                                    diceTurnAnimation?.cancel();
+                                    diceMoveAnimation?.cancel();
+                                    setDiceTurnAnimation2(impactCurrentYRotation);
+                                    setDiceMoveAnimation(impactVelocity, impactVelocityVector.x, -impactVelocityVector.y);
+                                } else {
+                                    setPosition(impactPosition.x, impactPosition.y);  
+                                    setVelocityVector(-impactVelocityVector.x, impactVelocityVector.y);
+                                    diceMoveAnimation?.cancel();
+                                    setDiceMoveAnimation(impactVelocity, impactVelocityVector.x, -impactVelocityVector.y);
+                                }   
+                                if (reboundSide === "top") {
+                                    isReboundTop = true;
+                                    isReboundBottom = false;
+                                } else {
+                                    isReboundTop = false;
+                                    isReboundBottom = true;
+                                }
+                            }
+                        }
+                        next = true;
+                    }
+                                      
+                    let next = true;
+                    const controlIntervalId = setInterval(() => {
+                        if (next) {
+                            reboundControl();
+                            stopControl();
+                        }
+                        // console.log(motionDuration, Date.now() - ti)
+                    }, 1);
+                                        
+                }    
+                isMouseDown = false;
+            }
+        }
+
+        const pointerover = () => {
+            isMouseOver = true;  
+        }
+
+        const pointerleave = () => {
+            if (!isMouseDown) {
+                isMouseOver = false;
+            }
+        }
+
+        const pointermove = (e: any) =>  {
+            if (isMouseDown) {
+                if (dice) {              
+                    motionLog.push({x: e.clientX,  y: e.clientY, t: Date.now()});
+                    motionLog.shift();  
+                    dice.style.left = `${ e.clientX - (diceSize/2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
+                    dice.style.top = `${ e.clientY - (diceSize/2)}px`;
+                }
+            }
+        }
+                
+        diceSideExternals.forEach((side) => {
+            side.addEventListener("pointerdown", pointerdown);
+        })
+                        
+        document.addEventListener("pointerup", pointerup);
+
+        diceSideExternals.forEach((side) => {
+            side.addEventListener("pointerover", pointerover);
+        })
+
+        diceSideExternals.forEach((side) => {
+            side.addEventListener("pointerleave", pointerleave);
+        })
+
+        document.addEventListener("pointermove", pointermove);
+
+        return () => {
+            dice?.removeEventListener("pointerdown", pointerdown)
+            dice?.removeEventListener("pointerup", pointerup)
+            document.removeEventListener("pointermove", pointermove)
+        }
+    }, [])
+
+    return (
+        <div className="dice flex">
+            <div className="diceAnimateCont diceAutoTurnAnimation">
+                <div className="diceSide diceSideExternal diceSide1 flex"></div>
+                <div className="diceSide diceSideExternal diceSide2 flex"></div>
+                <div className="diceSide diceSideExternal diceSide3 flex"></div>
+                <div className="diceSide diceSideExternal diceSide4 flex"></div>
+                <div className="diceSide diceSideExternal diceSide5 flex"></div>
+                <div className="diceSide diceSideExternal diceSide6 flex"></div>
+
+                <div className="diceSide flex"></div>
+                <div className="diceSide flex"></div>
+                <div className="diceSide flex"></div>
+
+                <div className="diceSide flex"></div>
+                <div className="diceSide flex"></div>
+                <div className="diceSide flex"></div>
+                <div className="diceSide flex"></div>
+                <div className="diceSide flex"></div>
+                <div className="diceSide flex"></div>
+            </div>
+        </div>
+    )
+}
+
+export default Dice
