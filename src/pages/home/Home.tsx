@@ -10,21 +10,6 @@ function Home() {
     useEffect(() => {
 
         class Dice {
-            
-            readonly diceSize: number = 100;   // El ancho del dado (en px) tiene que coincidir con el del css 
-            readonly jsx: JSX.Element
-            private dice: HTMLDivElement | null = null;
-            private diceTurnAnimateCont: HTMLDivElement | null = null;
-            private diceSideExternals: NodeListOf<Element> | undefined = undefined;
-
-            private getDomElements = () => {
-                const dice: HTMLDivElement | null = document.querySelector(`.dice${this.number}`);
-                const diceTurnAnimateCont: HTMLDivElement | null = document.querySelector(`.diceTurnAnimateCont${this.number}`);
-                const diceSideExternals = dice?.querySelectorAll(".diceSideExternal");
-                this.dice = dice;
-                this.diceTurnAnimateCont = diceTurnAnimateCont;
-                this.diceSideExternals = diceSideExternals;
-            }
 
             constructor(public number: number, public xPos: number, public yPos: number) {
                 this.number = number;
@@ -53,7 +38,25 @@ function Home() {
                     </div>
                 </div>
             }
+            
+            readonly jsx: JSX.Element
+            
+            private readonly diceSize: number = 100;   // El ancho del dado (en px) tiene que coincidir con el del css 
+            private dice: HTMLDivElement | null = null;
+            private diceTurnAnimateCont: HTMLDivElement | null = null;
+            private diceSideExternals: NodeListOf<Element> | undefined = undefined;
+            private diceMoveAnimation: Animation | undefined = undefined;
+            private diceTurnAnimation: Animation | undefined = undefined;
 
+            private getDomElements = () => {
+                const dice: HTMLDivElement | null = document.querySelector(`.dice${this.number}`);
+                const diceTurnAnimateCont: HTMLDivElement | null = document.querySelector(`.diceTurnAnimateCont${this.number}`);
+                const diceSideExternals = dice?.querySelectorAll(".diceSideExternal");
+                this.dice = dice;
+                this.diceTurnAnimateCont = diceTurnAnimateCont;
+                this.diceSideExternals = diceSideExternals;
+            }
+            
             getPosition = () => {
                 const diceRect = this.dice?.getBoundingClientRect();
                 const x = diceRect!.left + (this.diceSize / 2);
@@ -61,6 +64,12 @@ function Home() {
                 return { x: Math.floor(x), y: Math.floor(y) };
             }
 
+            setPosition = (x: number, y: number) => {
+                this.diceMoveAnimation?.cancel();
+                this.dice!.style.left = `${x - (this.diceSize / 2)}px`;
+                this.dice!.style.top = `${y - (this.diceSize / 2)}px`;
+            }
+           
             init = () => {
                 this.getDomElements();
                 
@@ -110,10 +119,7 @@ function Home() {
                             const aceleration = - 0.005;
                             let motionDuration = Math.abs((stopVelocity - Vi) / aceleration);                                             //La duracion del movimiento del dato hasta que se queda quieto es proporcional a la velocidad de tiro
                             let oneTurnDuration = (4 * this.diceSize) / Vi;
-
-                            let diceMoveAnimation: Animation | undefined;
-                            let diceTurnAnimation: Animation | undefined;
-
+                            
                             /**************** Limitador de velocidad de tiro ***************/
                             const Vmax = 3;
                             if (Math.abs(velocityVector.x) >= Math.abs(velocityVector.y)) {
@@ -144,11 +150,11 @@ function Home() {
                                             clearInterval(controlIntervalId);
                                             clearInterval(playBakcRateIntervalId);
                                         }, 100);
-                                        diceTurnAnimation?.pause();
-                                        diceMoveAnimation?.pause();
+                                        this.diceTurnAnimation?.pause();
+                                        this.diceMoveAnimation?.pause();
                                     }
                                 } else if (Vi < 1.1) {
-                                    // diceTurnAnimation?.pause();
+                                    // this.diceTurnAnimation?.pause();
                                 }
                             }
 
@@ -161,24 +167,11 @@ function Home() {
 
                             const playBackRateUpdate = () => {
                                 const t = Date.now() - ti;
-                                if (diceTurnAnimation && diceMoveAnimation) {
-                                    diceTurnAnimation.playbackRate = decelerationFunc(t);
-                                    diceMoveAnimation.playbackRate = decelerationFunc(t);
+                                if (this.diceTurnAnimation && this.diceMoveAnimation) {
+                                    this.diceTurnAnimation.playbackRate = decelerationFunc(t);
+                                    this.diceMoveAnimation.playbackRate = decelerationFunc(t);
                                 }
-                            }
-
-                            const getPosition = () => {
-                                const diceRect = this.dice?.getBoundingClientRect();
-                                const x = diceRect!.left + (this.diceSize / 2);
-                                const y = diceRect!.top + (this.diceSize / 2);
-                                return { x: Math.floor(x), y: Math.floor(y) };
-                            }
-
-                            const setPosition = (x: number, y: number) => {
-                                diceMoveAnimation?.cancel();
-                                this.dice!.style.left = `${x - (this.diceSize / 2)}px`;
-                                this.dice!.style.top = `${y - (this.diceSize / 2)}px`;
-                            }
+                            }                                                   
 
                             const getVelocityVector = () => {
                                 const t = Date.now() - ti;
@@ -216,10 +209,10 @@ function Home() {
                                 }
                             }
 
-                            const setDiceTurnAnimation2 = (currentYRotation: number) => {       /* Animacion de rotacion del dado */
+                            const setdiceTurnAnimation2 = (currentYRotation: number) => {       /* Animacion de rotacion del dado */
                                 const reboundDirectionVector = { x: getVelocityVector().x, y: getVelocityVector().y };
                                 const reboundgAngle = Math.floor(Math.atan2(reboundDirectionVector.y, reboundDirectionVector.x) * 180 / Math.PI);     //Angulo de tiro
-                                diceTurnAnimation = this.diceTurnAnimateCont?.animate([
+                                this.diceTurnAnimation = this.diceTurnAnimateCont?.animate([
                                     // keyframes
                                     { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation}deg) rotateX(0) translateZ(${this.diceSize / 2}px) translateX(${-(this.diceSize / 2)}px)` },
                                     { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation + 360}deg) rotateX(0) translateZ(${this.diceSize / 2}px) translateX(${-(this.diceSize / 2)}px)` }
@@ -232,13 +225,13 @@ function Home() {
                                 });
                             }
 
-                            const setDiceMoveAnimation = (Vx: number, Vy: number) => {      /* Animacion de translacion del dado */
+                            const setdiceMoveAnimation = (Vx: number, Vy: number) => {      /* Animacion de translacion del dado */
 
                                 const timeLeft = motionDuration;
                                 const reboundAx = Vx * timeLeft;
                                 const reboundAy = Vy * timeLeft;
 
-                                diceMoveAnimation = this.dice?.animate([
+                                this.diceMoveAnimation = this.dice?.animate([
                                     // keyframes
                                     { transform: `translateX(0) translateY(0)` },
                                     { transform: `translateX(${reboundAx}px) translateY(${reboundAy}px)` }
@@ -255,8 +248,8 @@ function Home() {
                                 playBackRateUpdate();
                             }, 10);
                             oneTurnDuration = ((4 * this.diceSize) / Vi);
-                            setDiceTurnAnimation2(getCurrentYRotation());
-                            setDiceMoveAnimation(Vxi, Vyi);
+                            setdiceTurnAnimation2(getCurrentYRotation());
+                            setdiceMoveAnimation(Vxi, Vyi);
 
                             let isReboundLeft = false;
                             let isReboundRight = false;
@@ -283,7 +276,7 @@ function Home() {
                                 }
 
                                 if (reboundSide) {
-                                    const impactPosition = { x: getPosition().x, y: getPosition().y };
+                                    const impactPosition = { x: this.getPosition().x, y: this.getPosition().y };
                                     const impactCurrentYRotation = getCurrentYRotation();
                                     const impactVelocityVector = { x: getVelocityVector().x, y: getVelocityVector().y };
                                     const impactVelocity = getVelocity();
@@ -292,17 +285,17 @@ function Home() {
 
                                     if (reboundSide === "left" || reboundSide === "right") {
                                         if (impactVelocity >= stopVelocity) {
-                                            setPosition(impactPosition.x, impactPosition.y);
+                                            this.setPosition(impactPosition.x, impactPosition.y);
                                             setVelocityVector(-impactVelocityVector.x, impactVelocityVector.y);
-                                            diceTurnAnimation?.cancel();
-                                            diceMoveAnimation?.cancel();
-                                            setDiceTurnAnimation2(impactCurrentYRotation);
-                                            setDiceMoveAnimation(-impactVelocityVector.x, impactVelocityVector.y);
+                                            this.diceTurnAnimation?.cancel();
+                                            this.diceMoveAnimation?.cancel();
+                                            setdiceTurnAnimation2(impactCurrentYRotation);
+                                            setdiceMoveAnimation(-impactVelocityVector.x, impactVelocityVector.y);
                                         } else {                                                                                        //Rebote sin girar a menos de "stopVelocity"
-                                            setPosition(impactPosition.x, impactPosition.y);
+                                            this.setPosition(impactPosition.x, impactPosition.y);
                                             setVelocityVector(-impactVelocityVector.x, impactVelocityVector.y);
-                                            diceMoveAnimation?.cancel();
-                                            setDiceMoveAnimation(-impactVelocityVector.x, impactVelocityVector.y);
+                                            this.diceMoveAnimation?.cancel();
+                                            setdiceMoveAnimation(-impactVelocityVector.x, impactVelocityVector.y);
                                         }
                                         if (reboundSide === "left") {
                                             isReboundRight = false;
@@ -313,17 +306,17 @@ function Home() {
                                         }
                                     } else if (reboundSide === "top" || reboundSide === "bottom") {
                                         if (impactVelocity >= stopVelocity) {
-                                            setPosition(impactPosition.x, impactPosition.y);
+                                            this.setPosition(impactPosition.x, impactPosition.y);
                                             setVelocityVector(impactVelocityVector.x, -impactVelocityVector.y);
-                                            diceTurnAnimation?.cancel();
-                                            diceMoveAnimation?.cancel();
-                                            setDiceTurnAnimation2(impactCurrentYRotation);
-                                            setDiceMoveAnimation(impactVelocityVector.x, -impactVelocityVector.y);
+                                            this.diceTurnAnimation?.cancel();
+                                            this.diceMoveAnimation?.cancel();
+                                            setdiceTurnAnimation2(impactCurrentYRotation);
+                                            setdiceMoveAnimation(impactVelocityVector.x, -impactVelocityVector.y);
                                         } else {
-                                            setPosition(impactPosition.x, impactPosition.y);
+                                            this.setPosition(impactPosition.x, impactPosition.y);
                                             setVelocityVector(-impactVelocityVector.x, impactVelocityVector.y);
-                                            diceMoveAnimation?.cancel();
-                                            setDiceMoveAnimation(impactVelocityVector.x, -impactVelocityVector.y);
+                                            this.diceMoveAnimation?.cancel();
+                                            setdiceMoveAnimation(impactVelocityVector.x, -impactVelocityVector.y);
                                         }
                                         if (reboundSide === "top") {
                                             isReboundTop = true;
