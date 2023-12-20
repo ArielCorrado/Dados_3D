@@ -1,11 +1,11 @@
 import "./home.css";
-import Dice from "../../components/dice/Dice";
+import Dice2 from "../../components/dice2/Dice2";
 
 function Home() {
    
     return (
         <div className="seccion rubikSeccion flex">
-            <Dice/>
+            <Dice2/>
         </div>
     )
 }

@@ -1,5 +1,5 @@
 .rubikSeccion {
-    perspective: 1000px;                /* Para que al usar "transform: translateZ" en "piece" el dado se aleje */
+    perspective: 1000px;                /*Para que al usar "transform: translateZ" en "piece" el dado se aleje*/
     position: relative;
     overflow: hidden;
 }
@@ -10,8 +10,8 @@
     --diceSize: 100px;
     width: var(--diceSize);
     height: var(--diceSize);
-    perspective: 500px;                 /* Para que el dado tenga perspectiva */
-    /*transform: translateZ(-1250px);    /* Alejamos el dado */
+    perspective: 500px;                 /* Para que el dado tenga perspectiva
+    /*transform: translateZ(-1250px);   /* Alejamos el dado */
 }
 
 .diceAnimateCont {

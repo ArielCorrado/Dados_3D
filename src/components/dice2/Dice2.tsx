@@ -1,7 +1,7 @@
 import "./dice.css";
 import { useEffect } from "react";
 
-function Dice2 () {
+function Dice () {
 
     useEffect(() => {
         
@@ -400,4 +400,4 @@ function Dice2 () {
     )
 }
 
-export default Dice2
+export default Dice
