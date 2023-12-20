@@ -69,6 +69,13 @@ function Home() {
                 this.dice!.style.left = `${x - (this.diceSize / 2)}px`;
                 this.dice!.style.top = `${y - (this.diceSize / 2)}px`;
             }
+
+            getCurrentYRotation = (): number => {            //Obtiene el angulo de rotacion en el eje y actual
+                const computedStyle = getComputedStyle(this.diceTurnAnimateCont!);
+                const transformMatrix = new DOMMatrix(computedStyle.transform);
+                const rotateYAngle = Math.atan2(transformMatrix.m13, transformMatrix.m33) * (180 / Math.PI);
+                return rotateYAngle; // Return the Y rotation angle in degrees
+            }
            
             init = () => {
                 this.getDomElements();
@@ -83,14 +90,7 @@ function Home() {
                                 
                 this.dice!.style.left = `${this.xPos - (this.diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
                 this.dice!.style.top = `${this.yPos - (this.diceSize / 2)}px`;
-
-                const getCurrentYRotation = (): number => {            //Obtiene el angulo de rotacion en el eje y actual
-                    const computedStyle = getComputedStyle(this.diceTurnAnimateCont!);
-                    const transformMatrix = new DOMMatrix(computedStyle.transform);
-                    const rotateYAngle = Math.atan2(transformMatrix.m13, transformMatrix.m33) * (180 / Math.PI);
-                    return rotateYAngle; // Return the Y rotation angle in degrees
-                }
-
+              
                 const pointerup = () => {                                                                      //Se entra a esta funcion al soltar el dado
                     if (isMouseOver) {                                                                         // y si el cursor esta sobre el
                         if (motionLog[4].x - motionLog[0].x !== 0 || motionLog[4].y - motionLog[0].y !== 0) {  //Verificamos que hayamos movido el dado (al menos en x o en y) para poder arrojarlo
@@ -113,15 +113,12 @@ function Home() {
                             let Vxi = Axi / At;        // px/ms
                             let Vyi = Ayi / At;        // px/ms
                             setVelocityVector(Vxi, Vyi);
-                            const Vi = Math.sqrt((velocityVector.x ** 2) + (velocityVector.y ** 2));
-
-                            const stopVelocity = 0.575;
-                            const aceleration = - 0.005;
-                            let motionDuration = Math.abs((stopVelocity - Vi) / aceleration);                                             //La duracion del movimiento del dato hasta que se queda quieto es proporcional a la velocidad de tiro
-                            let oneTurnDuration = (4 * this.diceSize) / Vi;
                             
+                            const stopVelocity = 0.60;
+                            const aceleration = - 0.003;
+                                                        
                             /**************** Limitador de velocidad de tiro ***************/
-                            const Vmax = 3;
+                            const Vmax = 5;
                             if (Math.abs(velocityVector.x) >= Math.abs(velocityVector.y)) {
                                 if (Math.abs(velocityVector.x) > Vmax) {
                                     const Vxi = velocityVector.x;
@@ -137,11 +134,17 @@ function Home() {
                                     velocityVector.x = (Math.abs(Vmax / Vyi)) * velocityVector.x
                                 }
                             }
+                            /****************************************************************/
+
+                            const Vi = Math.sqrt((velocityVector.x ** 2) + (velocityVector.y ** 2));
+                            console.log(Vi)
+                            let motionDuration = Math.abs((stopVelocity - Vi) / aceleration);                                             //La duracion del movimiento del dato hasta que se queda quieto es proporcional a la velocidad de tiro
+                            let oneTurnDuration = (4 * this.diceSize) / Vi;
 
                             const stopDegreesTolerance = 5;
                             const stopControl = () => {
                                 if (getVelocity() < stopVelocity) {
-                                    const actualYrotation = getCurrentYRotation();
+                                    const actualYrotation = this.getCurrentYRotation();
                                     if (
                                         (Math.abs(actualYrotation) % 90 <= stopDegreesTolerance) ||
                                         (Math.abs(actualYrotation) < 90 && Math.abs(actualYrotation) >= (90 - stopDegreesTolerance)) //Incluimos angulos menores y cercanos a 90º como 85º que  no son "detectados" por el algoritmo con "%"
@@ -248,7 +251,7 @@ function Home() {
                                 playBackRateUpdate();
                             }, 10);
                             oneTurnDuration = ((4 * this.diceSize) / Vi);
-                            setdiceTurnAnimation2(getCurrentYRotation());
+                            setdiceTurnAnimation2(this.getCurrentYRotation());
                             setdiceMoveAnimation(Vxi, Vyi);
 
                             let isReboundLeft = false;
@@ -277,7 +280,7 @@ function Home() {
 
                                 if (reboundSide) {
                                     const impactPosition = { x: this.getPosition().x, y: this.getPosition().y };
-                                    const impactCurrentYRotation = getCurrentYRotation();
+                                    const impactCurrentYRotation = this.getCurrentYRotation();
                                     const impactVelocityVector = { x: getVelocityVector().x, y: getVelocityVector().y };
                                     const impactVelocity = getVelocity();
                                     oneTurnDuration = ((4 * this.diceSize) / impactVelocity);
