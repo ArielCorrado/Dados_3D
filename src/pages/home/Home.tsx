@@ -92,7 +92,7 @@ function Home() {
                 this.dice!.style.top = `${this.yPos - (this.diceSize / 2)}px`;
 
                 const stopVelocity = 0.6;
-                const aceleration = - 0.003;
+                const aceleration = - 0.0025;
                 const Vmax = 5;
                 const stopDegreesTolerance = 5;
               
@@ -149,25 +149,13 @@ function Home() {
                                     // this.diceTurnAnimation?.pause();
                                 }
                             }
-
-                            // const decelerationFuncMin = (stopVelocity / Vi);                                //La funcion de desaceleracion no tiene que hacer descender la velocidad por debajo
-                            // const decelerationFuncAdjust = decelerationFuncMin * 0.9;                       // de stopVelocity para que el dado no se pare entes de que actue el "stopControl"
-                            // const decelerationFunc = (t: number): number => {                              //Funcion de desaceleracion (su valor inicial es 1 --> (t = 0))
-                            //     const result = (((stopVelocity - Vi) / (Vi * motionDuration)) * t) + 1;
-                            //     return result >= decelerationFuncMin ? result : decelerationFuncAdjust;
-                            // }
-                          
+                                             
                             const decelerationFuncMin = stopVelocity / Vmax;
                             const decelerationFunc = (t: number): number => {                              
                                 const result = ((- 1 / motionDuration) * t) + 1;
                                 return result > decelerationFuncMin ? result : decelerationFuncMin * 0.9;
                             }
-
-                            const timeFunction = (t: number): number => {     
-                                const result = ((-1 / motionDuration) * t)  + 1;
-                                return result > 0 ? result : 0;
-                            }                         
-
+                                  
                             const playBackRateUpdate = () => {
                                 const t = Date.now() - ti;
                                 if (this.diceTurnAnimation && this.diceMoveAnimation) {
@@ -264,7 +252,7 @@ function Home() {
                             let reboundSide: SideRebound = null;
                            
                             const reboundControl = () => {
-                                // next = false;
+                                next = false;
 
                                 if (getSideDistance.left() <= 0 && !isReboundLeft) {
                                     reboundSide = "left"
@@ -279,29 +267,16 @@ function Home() {
                                 }
 
                                 if (reboundSide) {
-                                    
                                     const impactPosition = { x: this.getPosition().x, y: this.getPosition().y };
                                     const impactCurrentYRotation = this.getCurrentYRotation();
-                                    const impactVelocityVector = { x: getVelocityVector().x, y: getVelocityVector().y };
-                                    const impactVelocity = getVelocity();
-                                    // oneTurnDuration = ((4 * this.diceSize) / impactVelocity);
-                                    // if (impactVelocity < fastReboundVelocity && impactVelocity > stopVelocity) oneTurnDuration = ((4 * this.diceSize) / (impactVelocity * 1.75)); //Giro mas rapido al rebotar a menos de "fastReboundVelocity". 
-
+                                   
                                     if (reboundSide === "left" || reboundSide === "right") {
-                                        // console.log("impact Vel", impactVelocity)
-                                        if (impactVelocity >= stopVelocity) {
-                                            this.setPosition(impactPosition.x, impactPosition.y);
-                                            setVelocityVector(-velocityVector.x, velocityVector.y);
-                                            this.diceTurnAnimation?.cancel();
-                                            this.diceMoveAnimation?.cancel();
-                                            setdiceTurnAnimation2(impactCurrentYRotation);
-                                            setdiceMoveAnimation(velocityVector.x, velocityVector.y);
-                                        } else {                                                                                        //Rebote sin girar a menos de "stopVelocity"
-                                            // this.setPosition(impactPosition.x, impactPosition.y);
-                                            // setVelocityVector(-impactVelocityVector.x, impactVelocityVector.y);
-                                            // this.diceMoveAnimation?.cancel();
-                                            // setdiceMoveAnimation(-impactVelocityVector.x, impactVelocityVector.y);
-                                        }
+                                        this.setPosition(impactPosition.x, impactPosition.y);
+                                        setVelocityVector(-velocityVector.x, velocityVector.y);
+                                        this.diceTurnAnimation?.cancel();
+                                        this.diceMoveAnimation?.cancel();
+                                        setdiceTurnAnimation2(impactCurrentYRotation);
+                                        setdiceMoveAnimation(velocityVector.x, velocityVector.y);
                                         if (reboundSide === "left") {
                                             isReboundRight = false;
                                             isReboundLeft = true;
@@ -310,19 +285,12 @@ function Home() {
                                             isReboundLeft = false;
                                         }
                                     } else if (reboundSide === "top" || reboundSide === "bottom") {
-                                        if (impactVelocity >= stopVelocity) {
-                                            this.setPosition(impactPosition.x, impactPosition.y);
-                                            setVelocityVector(velocityVector.x, -velocityVector.y);
-                                            this.diceTurnAnimation?.cancel();
-                                            this.diceMoveAnimation?.cancel();
-                                            setdiceTurnAnimation2(impactCurrentYRotation);
-                                            setdiceMoveAnimation(velocityVector.x, velocityVector.y);
-                                        } else {
-                                            // this.setPosition(impactPosition.x, impactPosition.y);
-                                            // setVelocityVector(-impactVelocityVector.x, impactVelocityVector.y);
-                                            // this.diceMoveAnimation?.cancel();
-                                            // setdiceMoveAnimation(impactVelocityVector.x, -impactVelocityVector.y);
-                                        }
+                                        this.setPosition(impactPosition.x, impactPosition.y);
+                                        setVelocityVector(velocityVector.x, -velocityVector.y);
+                                        this.diceTurnAnimation?.cancel();
+                                        this.diceMoveAnimation?.cancel();
+                                        setdiceTurnAnimation2(impactCurrentYRotation);
+                                        setdiceMoveAnimation(velocityVector.x, velocityVector.y);
                                         if (reboundSide === "top") {
                                             isReboundTop = true;
                                             isReboundBottom = false;
@@ -332,7 +300,7 @@ function Home() {
                                         }
                                     }
                                 }
-                                // next = true;
+                                next = true;
                             }
 
                             let next = true;
