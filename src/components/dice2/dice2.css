@@ -1,0 +1,137 @@
+.rubikSeccion {
+    perspective: 1000px;                /*Para que al usar "transform: translateZ" en "piece" el dado se aleje*/
+    position: relative;
+    overflow: hidden;
+}
+
+.dice {
+    position: absolute;
+    --piece-brightness-color: #f1a0b8;
+    --diceSize: 100px;
+    width: var(--diceSize);
+    height: var(--diceSize);
+    perspective: 500px;                 /* Para que el dado tenga perspectiva
+    /*transform: translateZ(-1250px);   /* Alejamos el dado */
+}
+
+.diceTurnAnimateCont {
+    transform-style: preserve-3d;
+}
+
+.diceSide {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    margin: auto;
+    transform-style: preserve-3d;
+    width: var(--diceSize);
+    height: var(--diceSize);
+    border: 2px solid var(--piece-brightness-color);
+    border-radius: 30px;    
+    background-color: #e9759c;
+}
+
+.diceSideExternal {
+    box-shadow: 0px 0px 20px 0px rgba(233,117,156,0.5);
+    background-size: contain;
+    background-position: center;
+    background-size: 100%;
+    cursor: pointer;
+}
+
+.diceSide1 {
+    background-image: url("../../../public/images/dice/1.png");
+}
+.diceSide2 {
+    background-image: url("../../../public/images/dice/2.png");
+}
+.diceSide3 {
+    background-image: url("../../../public/images/dice/3.png");
+}
+.diceSide4 {
+    background-image: url("../../../public/images/dice/4.png");    
+}
+.diceSide5 {
+    background-image: url("../../../public/images/dice/5.png");
+}
+.diceSide6 {
+    background-image: url("../../../public/images/dice/6.png");
+}
+
+.diceTurned {
+    transform: rotateY(10deg) rotateX(10deg) translateZ(calc(var(--diceSize) / 2)) translateX(calc(var(--diceSize) / -2));
+}
+
+/*.diceSide:nth-child(1) {                           /* Caras externas exteriores */
+/* } */
+.diceSide:nth-child(2) {
+    transform-origin: 100%;
+    transform: rotateY(-90deg);
+}
+.diceSide:nth-child(3) {
+    transform-origin: 0 100%;
+    transform: rotateX(90deg);
+}
+.diceSide:nth-child(4) {
+    transform-origin: 0 0;
+    transform: rotateX(-90deg);    
+}
+.diceSide:nth-child(5) {
+    transform-origin: 0;
+    transform: rotateY(90deg);
+}
+.diceSide:nth-child(6) {
+    transform: translateZ(calc(var(--diceSize) / -1));
+}
+
+
+.diceSide:nth-child(7) {                               /*Caras internas y cruzadas para que no se vea a traves del dado por las esquinas*/
+    background-color: var(--piece-brightness-color);
+    transform: translateZ(calc(var(--diceSize) / -2)) rotateY(90deg);
+    border: none;
+    border-radius: initial;
+}
+.diceSide:nth-child(8) {
+    background-color: var(--piece-brightness-color);
+    transform: translateZ(calc(var(--diceSize) / -2));
+    border: none;
+    border-radius: initial;
+}
+.diceSide:nth-child(9) {
+    background-color: var(--piece-brightness-color);
+    transform: translateZ(calc(var(--diceSize) / -2)) rotateX(90deg);
+    border: none;
+    border-radius: initial;
+}
+
+
+.diceSide:nth-child(10) {                              /*Caras externas interiores con el color del brillo para que las esquinas se vean de color claro*/
+    background-color: var(--piece-brightness-color);
+    transform: translateZ(-1px);
+}
+.diceSide:nth-child(11) {
+    background-color: var(--piece-brightness-color);
+    transform-origin: 100%;
+    transform: translateX(-1px) rotateY(-90deg);
+}
+.diceSide:nth-child(12) {
+    background-color: var(--piece-brightness-color);
+    transform-origin: 0;
+    transform: translateX(1px) rotateY(90deg) ;
+}
+.diceSide:nth-child(13) {
+    background-color: var(--piece-brightness-color);
+    transform-origin: 0 100%;
+    transform: translateY(-1px) rotateX(90deg) ;
+}
+.diceSide:nth-child(14) {
+    background-color: var(--piece-brightness-color);
+    transform-origin: 0 0;
+    transform: translateY(1px) rotateX(-90deg) ;
+}
+.diceSide:nth-child(15) {
+    background-color: var(--piece-brightness-color);
+    transform: translateZ(calc(1px - var(--diceSize)));
+}
