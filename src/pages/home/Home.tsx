@@ -17,8 +17,8 @@ function Home() {
                 this.xPos = xPos;
                 this.yPos = yPos;
 
-                this.jsx = <div className="dice flex" key={this.number}>
-                    <div className="diceTurnAnimateCont diceTurned">
+                this.jsx = <div className={`dice dice${this.number} flex`} key={this.number}>
+                    <div className={`diceTurnAnimateCont diceTurnAnimateCont${this.number} diceTurned`}>
                         <div className="diceSide diceSideExternal diceSide1 flex"></div>
                         <div className="diceSide diceSideExternal diceSide2 flex"></div>
                         <div className="diceSide diceSideExternal diceSide3 flex"></div>
@@ -42,15 +42,9 @@ function Home() {
 
             run = () => {
                 const diceSize = 100; // El ancho del dado (en px) tiene que coincidir con el del css   
-
-                const dices = document.querySelectorAll(".dice");
-                dices[this.number].classList.add(`dice${this.number}`);
-
-                const diceTurnAnimatesConts = document.querySelectorAll(".diceTurnAnimateCont");
-                diceTurnAnimatesConts[this.number].classList.add(`diceTurnAnimateCont${this.number}`);
-
                 let isMouseDown = false;
                 let isMouseOver = false;
+                
                 const motionLog: { x: number, y: number, t: number }[] = new Array(5);
                 for (let i = 0; i < motionLog.length; i++) {
                     motionLog[i] = { x: 0, y: 0, t: 0 };
@@ -58,12 +52,8 @@ function Home() {
 
                 const dice: HTMLDivElement | null = document.querySelector(`.dice${this.number}`);
                 const diceTurnAnimateCont: HTMLDivElement | null = document.querySelector(`.diceTurnAnimateCont${this.number}`);
-
                 const diceSideExternals = dice?.querySelectorAll(".diceSideExternal");
-                diceSideExternals?.forEach((diceSide) => {
-                    diceSide.classList.add(`diceSideExternal${this.number}`);
-                })
-
+                
                 dice!.style.left = `${this.xPos - (diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
                 dice!.style.top = `${this.yPos - (diceSize / 2)}px`;
 
