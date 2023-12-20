@@ -92,8 +92,8 @@ function Home() {
                 this.dice!.style.top = `${this.yPos - (this.diceSize / 2)}px`;
 
                 const stopVelocity = 0.6;
-                const aceleration = - 0.003;
-                const Vmax = 3;
+                const aceleration = - 0.004;
+                const Vmax = 6;
                 const stopDegreesTolerance = 5;
               
                 const pointerup = () => {                                                                      //Se entra a esta funcion al soltar el dado
@@ -117,18 +117,17 @@ function Home() {
                             let Vxi = Axi / At;        // px/ms
                             let Vyi = Ayi / At;        // px/ms
                             const shootingAngle = (Math.atan2(-Ayi, Axi) / Math.PI) * 180;
-                            console.log(shootingAngle)
                             setVelocityVector(Vxi, Vyi);
                             let Vi = Math.sqrt((velocityVector.x ** 2) + (velocityVector.y ** 2));
 
                             if (Vi > Vmax) {
-                                velocityVector.x = Vi * Math.cos((shootingAngle / 180) * Math.PI);
-                                velocityVector.y = - Vi * Math.sin((shootingAngle / 180) * Math.PI);
+                                velocityVector.x = Vmax * Math.cos((shootingAngle / 180) * Math.PI);
+                                velocityVector.y = - Vmax * Math.sin((shootingAngle / 180) * Math.PI);
                                 Vxi = velocityVector.x;
                                 Vyi = velocityVector.y;
                                 Vi = Vmax;
-                            }                                    
-                        
+                            }                    
+                          
                             let motionDuration = Math.abs((stopVelocity - Vi) / aceleration);                                             //La duracion del movimiento del dato hasta que se queda quieto es proporcional a la velocidad de tiro
                             let oneTurnDuration = (4 * this.diceSize) / Vi;
                             
@@ -139,10 +138,10 @@ function Home() {
                                         (Math.abs(actualYrotation) % 90 <= stopDegreesTolerance) ||
                                         (Math.abs(actualYrotation) < 90 && Math.abs(actualYrotation) >= (90 - stopDegreesTolerance)) //Incluimos angulos menores y cercanos a 90º como 85º que  no son "detectados" por el algoritmo con "%"
                                     ) {
-                                        setTimeout(() => {
+                                        // setTimeout(() => {
                                             clearInterval(controlIntervalId);
                                             clearInterval(playBakcRateIntervalId);
-                                        }, 100);
+                                        // }, 100);
                                         this.diceTurnAnimation?.pause();
                                         this.diceMoveAnimation?.pause();
                                     }
@@ -151,11 +150,17 @@ function Home() {
                                 }
                             }
 
-                            const decelerationFuncMin = (stopVelocity / Vi);                                //La funcion de desaceleracion no tiene que hacer descender la velocidad por debajo
-                            const decelerationFuncAdjust = decelerationFuncMin * 0.9;                       // de stopVelocity para que el dado no se pare entes de que actue el "stopControl"
-                            const decelerationFunc = (t: number): number => {                              //Funcion de desaceleracion (su valor inicial es 1 --> (t = 0))
-                                const result = (((stopVelocity - Vi) / (Vi * motionDuration)) * t) + 1;
-                                return result >= decelerationFuncMin ? result : decelerationFuncAdjust;
+                            // const decelerationFuncMin = (stopVelocity / Vi);                                //La funcion de desaceleracion no tiene que hacer descender la velocidad por debajo
+                            // const decelerationFuncAdjust = decelerationFuncMin * 0.9;                       // de stopVelocity para que el dado no se pare entes de que actue el "stopControl"
+                            // const decelerationFunc = (t: number): number => {                              //Funcion de desaceleracion (su valor inicial es 1 --> (t = 0))
+                            //     const result = (((stopVelocity - Vi) / (Vi * motionDuration)) * t) + 1;
+                            //     return result >= decelerationFuncMin ? result : decelerationFuncAdjust;
+                            // }
+                          
+                            const decelerationFuncMin = stopVelocity / Vmax;
+                            const decelerationFunc = (t: number): number => {                              
+                                const result = ((- 1 / motionDuration) * t) + 1;
+                                return result > decelerationFuncMin ? result : decelerationFuncMin * 0.9;
                             }
 
                             const timeFunction = (t: number): number => {     
@@ -177,9 +182,9 @@ function Home() {
                                 const Vy = velocityVector.y * decelerationFunc(t);
                                 return { x: Vx, y: Vy };
                             }
-
+                            
                             const getVelocity = () => Math.sqrt(getVelocityVector().x ** 2 + getVelocityVector().y ** 2);
-
+                            
                             const getSideDistance = {           /* Calcula la distancia del dado a un determinado borde de la ventana visual (window) */
                                 left: () => {
                                     const sides = this.diceSideExternals;
@@ -248,7 +253,7 @@ function Home() {
                             oneTurnDuration = ((4 * this.diceSize) / Vi);
                             setdiceTurnAnimation2(this.getCurrentYRotation());
                             setdiceMoveAnimation(Vxi, Vyi);
-
+                            
                             let isReboundLeft = false;
                             let isReboundRight = false;
                             let isReboundTop = false;
@@ -257,7 +262,7 @@ function Home() {
                             // const fastReboundVelocity = 1;
                             type SideRebound = "left" | "right" | "top" | "bottom" | null;
                             let reboundSide: SideRebound = null;
-
+                           
                             const reboundControl = () => {
                                 next = false;
 
