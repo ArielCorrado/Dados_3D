@@ -341,7 +341,7 @@ function Home() {
                                     reboundControl();
                                     stopControl();
                                 }
-                                // console.log(motionDuration, Date.now() - ti, getVelocity().toFixed(2))
+                                console.log(motionDuration, Date.now() - ti, getVelocity().toFixed(2))
                             }, 1);
 
                         }
