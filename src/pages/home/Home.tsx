@@ -95,7 +95,10 @@ function Home() {
                     if (isMouseOver) {                                                                         // y si el cursor esta sobre el
                         if (motionLog[4].x - motionLog[0].x !== 0 || motionLog[4].y - motionLog[0].y !== 0) {  //Verificamos que hayamos movido el dado (al menos en x o en y) para poder arrojarlo
 
-                            // setRandomDice();
+                            const stopVelocity = 0.60;
+                            const aceleration = - 0.003;
+                            const Vmax = 5;
+                            
                             this.diceTurnAnimateCont?.classList.remove("diceTurned");
                             this.dice?.getAnimations({ subtree: true }).forEach(animation => {
                                 animation.cancel();
@@ -113,12 +116,9 @@ function Home() {
                             let Vxi = Axi / At;        // px/ms
                             let Vyi = Ayi / At;        // px/ms
                             setVelocityVector(Vxi, Vyi);
-                            
-                            const stopVelocity = 0.60;
-                            const aceleration = - 0.003;
-                                                        
+                                                                                                                
                             /**************** Limitador de velocidad de tiro ***************/
-                            const Vmax = 5;
+                            
                             if (Math.abs(velocityVector.x) >= Math.abs(velocityVector.y)) {
                                 if (Math.abs(velocityVector.x) > Vmax) {
                                     const Vxi = velocityVector.x;
