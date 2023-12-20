@@ -10,7 +10,20 @@ function Home() {
     useEffect(() => {
 
         class Dice {
+            
             readonly jsx: JSX.Element
+            private dice: HTMLDivElement | null = null;
+            private diceTurnAnimateCont: HTMLDivElement | null = null;
+            private diceSideExternals: NodeListOf<Element> | undefined = undefined;
+
+            private getDomElements = () => {
+                const dice: HTMLDivElement | null = document.querySelector(`.dice${this.number}`);
+                const diceTurnAnimateCont: HTMLDivElement | null = document.querySelector(`.diceTurnAnimateCont${this.number}`);
+                const diceSideExternals = dice?.querySelectorAll(".diceSideExternal");
+                this.dice = dice;
+                this.diceTurnAnimateCont = diceTurnAnimateCont;
+                this.diceSideExternals = diceSideExternals;
+            }
 
             constructor(public number: number, public xPos: number, public yPos: number) {
                 this.number = number;
@@ -40,7 +53,9 @@ function Home() {
                 </div>
             }
 
-            run = () => {
+            init = () => {
+                this.getDomElements();
+
                 const diceSize = 100; // El ancho del dado (en px) tiene que coincidir con el del css   
                 let isMouseDown = false;
                 let isMouseOver = false;
@@ -49,16 +64,12 @@ function Home() {
                 for (let i = 0; i < motionLog.length; i++) {
                     motionLog[i] = { x: 0, y: 0, t: 0 };
                 }
-
-                const dice: HTMLDivElement | null = document.querySelector(`.dice${this.number}`);
-                const diceTurnAnimateCont: HTMLDivElement | null = document.querySelector(`.diceTurnAnimateCont${this.number}`);
-                const diceSideExternals = dice?.querySelectorAll(".diceSideExternal");
-                
-                dice!.style.left = `${this.xPos - (diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
-                dice!.style.top = `${this.yPos - (diceSize / 2)}px`;
+                                
+                this.dice!.style.left = `${this.xPos - (diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
+                this.dice!.style.top = `${this.yPos - (diceSize / 2)}px`;
 
                 const getCurrentYRotation = (): number => {            //Obtiene el angulo de rotacion en el eje y actual
-                    const computedStyle = getComputedStyle(diceTurnAnimateCont!);
+                    const computedStyle = getComputedStyle(this.diceTurnAnimateCont!);
                     const transformMatrix = new DOMMatrix(computedStyle.transform);
                     const rotateYAngle = Math.atan2(transformMatrix.m13, transformMatrix.m33) * (180 / Math.PI);
                     return rotateYAngle; // Return the Y rotation angle in degrees
@@ -69,8 +80,8 @@ function Home() {
                         if (motionLog[4].x - motionLog[0].x !== 0 || motionLog[4].y - motionLog[0].y !== 0) {  //Verificamos que hayamos movido el dado (al menos en x o en y) para poder arrojarlo
 
                             // setRandomDice();
-                            diceTurnAnimateCont?.classList.remove("diceTurned");
-                            dice?.getAnimations({ subtree: true }).forEach(animation => {
+                            this.diceTurnAnimateCont?.classList.remove("diceTurned");
+                            this.dice?.getAnimations({ subtree: true }).forEach(animation => {
                                 animation.cancel();
                             })
 
@@ -150,7 +161,7 @@ function Home() {
                             }
 
                             const getPosition = () => {
-                                const diceRect = dice?.getBoundingClientRect();
+                                const diceRect = this.dice?.getBoundingClientRect();
                                 const x = diceRect!.left + (diceSize / 2);
                                 const y = diceRect!.top + (diceSize / 2);
                                 return { x: Math.floor(x), y: Math.floor(y) };
@@ -158,8 +169,8 @@ function Home() {
 
                             const setPosition = (x: number, y: number) => {
                                 diceMoveAnimation?.cancel();
-                                dice!.style.left = `${x - (diceSize / 2)}px`;
-                                dice!.style.top = `${y - (diceSize / 2)}px`;
+                                this.dice!.style.left = `${x - (diceSize / 2)}px`;
+                                this.dice!.style.top = `${y - (diceSize / 2)}px`;
                             }
 
                             const getVelocityVector = () => {
@@ -173,25 +184,25 @@ function Home() {
 
                             const getSideDistance = {           /* Calcula la distancia del dado a un determinado borde de la ventana visual (window) */
                                 left: () => {
-                                    const sides = diceSideExternals;
+                                    const sides = this.diceSideExternals;
                                     const sidesArr = Array.from(sides!)
                                     const sidesLeft = sidesArr.map((side) => side.getBoundingClientRect().left)
                                     return Math.min(...sidesLeft);
                                 },
                                 right: () => {
-                                    const sides = diceSideExternals;
+                                    const sides = this.diceSideExternals;
                                     const sidesArr = Array.from(sides!)
                                     const sidesRight = sidesArr.map((side) => window.innerWidth - side.getBoundingClientRect().right)
                                     return Math.min(...sidesRight);
                                 },
                                 top: () => {
-                                    const sides = diceSideExternals;
+                                    const sides = this.diceSideExternals;
                                     const sidesArr = Array.from(sides!)
                                     const sidesTop = sidesArr.map((side) => side.getBoundingClientRect().top)
                                     return Math.min(...sidesTop);
                                 },
                                 bottom: () => {
-                                    const sides = diceSideExternals;
+                                    const sides = this.diceSideExternals;
                                     const sidesArr = Array.from(sides!)
                                     const sidesBottom = sidesArr.map((side) => window.innerHeight - side.getBoundingClientRect().bottom)
                                     return Math.min(...sidesBottom);
@@ -201,7 +212,7 @@ function Home() {
                             const setDiceTurnAnimation2 = (currentYRotation: number) => {       /* Animacion de rotacion del dado */
                                 const reboundDirectionVector = { x: getVelocityVector().x, y: getVelocityVector().y };
                                 const reboundgAngle = Math.floor(Math.atan2(reboundDirectionVector.y, reboundDirectionVector.x) * 180 / Math.PI);     //Angulo de tiro
-                                diceTurnAnimation = diceTurnAnimateCont?.animate([
+                                diceTurnAnimation = this.diceTurnAnimateCont?.animate([
                                     // keyframes
                                     { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation}deg) rotateX(0) translateZ(${diceSize / 2}px) translateX(${-(diceSize / 2)}px)` },
                                     { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation + 360}deg) rotateX(0) translateZ(${diceSize / 2}px) translateX(${-(diceSize / 2)}px)` }
@@ -220,7 +231,7 @@ function Home() {
                                 const reboundAx = Vx * timeLeft;
                                 const reboundAy = Vy * timeLeft;
 
-                                diceMoveAnimation = dice?.animate([
+                                diceMoveAnimation = this.dice?.animate([
                                     // keyframes
                                     { transform: `translateX(0) translateY(0)` },
                                     { transform: `translateX(${reboundAx}px) translateY(${reboundAy}px)` }
@@ -345,38 +356,38 @@ function Home() {
 
                 const pointermove = (e: any) => {
                     if (isMouseDown) {
-                        if (dice) {
+                        if (this.dice) {
                             motionLog.push({ x: e.clientX, y: e.clientY, t: Date.now() });
                             motionLog.shift();
-                            dice.style.left = `${e.clientX - (diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
-                            dice.style.top = `${e.clientY - (diceSize / 2)}px`;
+                            this.dice.style.left = `${e.clientX - (diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
+                            this.dice.style.top = `${e.clientY - (diceSize / 2)}px`;
                         }
                     }
                 }
 
                 const pointerdown = (e: any) => {
-                    const diceAnimations = dice?.getAnimations({ subtree: true });
+                    const diceAnimations = this.dice?.getAnimations({ subtree: true });
                     diceAnimations?.forEach((animation) => {
                         animation.cancel();
                     })
-                    diceTurnAnimateCont?.classList.add("diceTurned");
-                    dice!.style.left = `${e.clientX - (diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
-                    dice!.style.top = `${e.clientY - (diceSize / 2)}px`;
+                    this.diceTurnAnimateCont?.classList.add("diceTurned");
+                    this.dice!.style.left = `${e.clientX - (diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
+                    this.dice!.style.top = `${e.clientY - (diceSize / 2)}px`;
                     isMouseDown = true;
                 }
 
 
-                diceSideExternals?.forEach((side) => {
+                this.diceSideExternals?.forEach((side) => {
                     side.addEventListener("pointerdown", pointerdown);
                 })
 
                 document.addEventListener("pointerup", pointerup);
 
-                diceSideExternals?.forEach((side) => {
+                this.diceSideExternals?.forEach((side) => {
                     side.addEventListener("pointerover", pointerover);
                 })
 
-                diceSideExternals?.forEach((side) => {
+                this.diceSideExternals?.forEach((side) => {
                     side.addEventListener("pointerleave", pointerleave);
                 })
 
@@ -390,9 +401,9 @@ function Home() {
         setDices([dice0.jsx, dice1.jsx]);
 
         setTimeout(() => {
-            dice0.run();
-            dice1.run();
-        }, 500);
+            dice0.init();
+            dice1.init();
+        }, 100);
 
     }, [])
 
