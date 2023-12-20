@@ -92,8 +92,8 @@ function Home() {
                 this.dice!.style.top = `${this.yPos - (this.diceSize / 2)}px`;
 
                 const stopVelocity = 0.6;
-                const aceleration = - 0.004;
-                const Vmax = 6;
+                const aceleration = - 0.003;
+                const Vmax = 5;
                 const stopDegreesTolerance = 5;
               
                 const pointerup = () => {                                                                      //Se entra a esta funcion al soltar el dado
@@ -264,7 +264,7 @@ function Home() {
                             let reboundSide: SideRebound = null;
                            
                             const reboundControl = () => {
-                                next = false;
+                                // next = false;
 
                                 if (getSideDistance.left() <= 0 && !isReboundLeft) {
                                     reboundSide = "left"
@@ -284,7 +284,7 @@ function Home() {
                                     const impactCurrentYRotation = this.getCurrentYRotation();
                                     const impactVelocityVector = { x: getVelocityVector().x, y: getVelocityVector().y };
                                     const impactVelocity = getVelocity();
-                                    oneTurnDuration = ((4 * this.diceSize) / impactVelocity);
+                                    // oneTurnDuration = ((4 * this.diceSize) / impactVelocity);
                                     // if (impactVelocity < fastReboundVelocity && impactVelocity > stopVelocity) oneTurnDuration = ((4 * this.diceSize) / (impactVelocity * 1.75)); //Giro mas rapido al rebotar a menos de "fastReboundVelocity". 
 
                                     if (reboundSide === "left" || reboundSide === "right") {
@@ -295,7 +295,7 @@ function Home() {
                                             this.diceTurnAnimation?.cancel();
                                             this.diceMoveAnimation?.cancel();
                                             setdiceTurnAnimation2(impactCurrentYRotation);
-                                            setdiceMoveAnimation(-impactVelocityVector.x, impactVelocityVector.y);
+                                            setdiceMoveAnimation(velocityVector.x, velocityVector.y);
                                         } else {                                                                                        //Rebote sin girar a menos de "stopVelocity"
                                             // this.setPosition(impactPosition.x, impactPosition.y);
                                             // setVelocityVector(-impactVelocityVector.x, impactVelocityVector.y);
@@ -316,7 +316,7 @@ function Home() {
                                             this.diceTurnAnimation?.cancel();
                                             this.diceMoveAnimation?.cancel();
                                             setdiceTurnAnimation2(impactCurrentYRotation);
-                                            setdiceMoveAnimation(impactVelocityVector.x, -impactVelocityVector.y);
+                                            setdiceMoveAnimation(velocityVector.x, velocityVector.y);
                                         } else {
                                             // this.setPosition(impactPosition.x, impactPosition.y);
                                             // setVelocityVector(-impactVelocityVector.x, impactVelocityVector.y);
@@ -332,7 +332,7 @@ function Home() {
                                         }
                                     }
                                 }
-                                next = true;
+                                // next = true;
                             }
 
                             let next = true;
@@ -341,7 +341,7 @@ function Home() {
                                     reboundControl();
                                     stopControl();
                                 }
-                                console.log(motionDuration, Date.now() - ti, getVelocity().toFixed(2))
+                                // console.log(motionDuration, Date.now() - ti, getVelocity().toFixed(2))
                             }, 1);
 
                         }
