@@ -384,7 +384,7 @@ function Dice (props: {xPos: number, yPos: number, number: number}) {
             document.removeEventListener("pointermove", pointermove)
         }
         
-    // eslint-disable-next-line    
+    // eslint-disable-next-line
     }, [])
 
     useEffect(() => {
@@ -392,7 +392,7 @@ function Dice (props: {xPos: number, yPos: number, number: number}) {
         const dice : HTMLDivElement | null = document.querySelector(`.dice${props.number}`);
         dice!.style.left = `${props.xPos - (diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
         dice!.style.top = `${props.yPos - (diceSize / 2)}px`;
-           
+    // eslint-disable-next-line       
     }, [props.xPos, props.yPos])
 
     return (
