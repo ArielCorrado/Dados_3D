@@ -95,10 +95,11 @@ function Home() {
                     if (isMouseOver) {                                                                         // y si el cursor esta sobre el
                         if (motionLog[4].x - motionLog[0].x !== 0 || motionLog[4].y - motionLog[0].y !== 0) {  //Verificamos que hayamos movido el dado (al menos en x o en y) para poder arrojarlo
 
-                            const stopVelocity = 0.60;
+                            const stopVelocity = 0.6;
                             const aceleration = - 0.003;
-                            const Vmax = 5;
-                            
+                            const Vmax = 3;
+                            const stopDegreesTolerance = 5;
+
                             this.diceTurnAnimateCont?.classList.remove("diceTurned");
                             this.dice?.getAnimations({ subtree: true }).forEach(animation => {
                                 animation.cancel();
@@ -115,33 +116,22 @@ function Home() {
                             const At = motionLog[4].t - motionLog[0].t;
                             let Vxi = Axi / At;        // px/ms
                             let Vyi = Ayi / At;        // px/ms
+                            const shootingAngle = (Math.atan2(-Ayi, Axi) / Math.PI) * 180;
+                            console.log(shootingAngle)
                             setVelocityVector(Vxi, Vyi);
-                                                                                                                
-                            /**************** Limitador de velocidad de tiro ***************/
-                            
-                            if (Math.abs(velocityVector.x) >= Math.abs(velocityVector.y)) {
-                                if (Math.abs(velocityVector.x) > Vmax) {
-                                    const Vxi = velocityVector.x;
-                                    const VxSign = Math.abs(velocityVector.x) / velocityVector.x;
-                                    velocityVector.x = Vmax * VxSign;
-                                    velocityVector.y = (Math.abs(Vmax / Vxi)) * velocityVector.y
-                                }
-                            } else {
-                                if (Math.abs(velocityVector.y) > Vmax) {
-                                    const Vyi = velocityVector.y;
-                                    const VySign = Math.abs(velocityVector.y) / velocityVector.y;
-                                    velocityVector.y = Vmax * VySign;
-                                    velocityVector.x = (Math.abs(Vmax / Vyi)) * velocityVector.x
-                                }
-                            }
-                            /****************************************************************/
+                            let Vi = Math.sqrt((velocityVector.x ** 2) + (velocityVector.y ** 2));
 
-                            const Vi = Math.sqrt((velocityVector.x ** 2) + (velocityVector.y ** 2));
-                            console.log(Vi)
+                            if (Vi > Vmax) {
+                                velocityVector.x = Vi * Math.cos((shootingAngle / 180) * Math.PI);
+                                velocityVector.y = - Vi * Math.sin((shootingAngle / 180) * Math.PI);
+                                Vxi = velocityVector.x;
+                                Vyi = velocityVector.y;
+                                Vi = Vmax;
+                            }                                    
+                        
                             let motionDuration = Math.abs((stopVelocity - Vi) / aceleration);                                             //La duracion del movimiento del dato hasta que se queda quieto es proporcional a la velocidad de tiro
                             let oneTurnDuration = (4 * this.diceSize) / Vi;
-
-                            const stopDegreesTolerance = 5;
+                            
                             const stopControl = () => {
                                 if (getVelocity() < stopVelocity) {
                                     const actualYrotation = this.getCurrentYRotation();
@@ -339,7 +329,7 @@ function Home() {
                                     reboundControl();
                                     stopControl();
                                 }
-                                // console.log(motionDuration, Date.now() - ti)
+                                console.log(motionDuration, Date.now() - ti)
                             }, 1);
 
                         }
