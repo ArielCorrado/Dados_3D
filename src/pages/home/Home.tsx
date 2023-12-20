@@ -11,6 +11,7 @@ function Home() {
 
         class Dice {
             
+            readonly diceSize: number = 100;   // El ancho del dado (en px) tiene que coincidir con el del css 
             readonly jsx: JSX.Element
             private dice: HTMLDivElement | null = null;
             private diceTurnAnimateCont: HTMLDivElement | null = null;
@@ -53,10 +54,16 @@ function Home() {
                 </div>
             }
 
+            getPosition = () => {
+                const diceRect = this.dice?.getBoundingClientRect();
+                const x = diceRect!.left + (this.diceSize / 2);
+                const y = diceRect!.top + (this.diceSize / 2);
+                return { x: Math.floor(x), y: Math.floor(y) };
+            }
+
             init = () => {
                 this.getDomElements();
-
-                const diceSize = 100; // El ancho del dado (en px) tiene que coincidir con el del css   
+                
                 let isMouseDown = false;
                 let isMouseOver = false;
                 
@@ -65,8 +72,8 @@ function Home() {
                     motionLog[i] = { x: 0, y: 0, t: 0 };
                 }
                                 
-                this.dice!.style.left = `${this.xPos - (diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
-                this.dice!.style.top = `${this.yPos - (diceSize / 2)}px`;
+                this.dice!.style.left = `${this.xPos - (this.diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
+                this.dice!.style.top = `${this.yPos - (this.diceSize / 2)}px`;
 
                 const getCurrentYRotation = (): number => {            //Obtiene el angulo de rotacion en el eje y actual
                     const computedStyle = getComputedStyle(this.diceTurnAnimateCont!);
@@ -102,7 +109,7 @@ function Home() {
                             const stopVelocity = 0.575;
                             const aceleration = - 0.005;
                             let motionDuration = Math.abs((stopVelocity - Vi) / aceleration);                                             //La duracion del movimiento del dato hasta que se queda quieto es proporcional a la velocidad de tiro
-                            let oneTurnDuration = (4 * diceSize) / Vi;
+                            let oneTurnDuration = (4 * this.diceSize) / Vi;
 
                             let diceMoveAnimation: Animation | undefined;
                             let diceTurnAnimation: Animation | undefined;
@@ -162,15 +169,15 @@ function Home() {
 
                             const getPosition = () => {
                                 const diceRect = this.dice?.getBoundingClientRect();
-                                const x = diceRect!.left + (diceSize / 2);
-                                const y = diceRect!.top + (diceSize / 2);
+                                const x = diceRect!.left + (this.diceSize / 2);
+                                const y = diceRect!.top + (this.diceSize / 2);
                                 return { x: Math.floor(x), y: Math.floor(y) };
                             }
 
                             const setPosition = (x: number, y: number) => {
                                 diceMoveAnimation?.cancel();
-                                this.dice!.style.left = `${x - (diceSize / 2)}px`;
-                                this.dice!.style.top = `${y - (diceSize / 2)}px`;
+                                this.dice!.style.left = `${x - (this.diceSize / 2)}px`;
+                                this.dice!.style.top = `${y - (this.diceSize / 2)}px`;
                             }
 
                             const getVelocityVector = () => {
@@ -214,8 +221,8 @@ function Home() {
                                 const reboundgAngle = Math.floor(Math.atan2(reboundDirectionVector.y, reboundDirectionVector.x) * 180 / Math.PI);     //Angulo de tiro
                                 diceTurnAnimation = this.diceTurnAnimateCont?.animate([
                                     // keyframes
-                                    { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation}deg) rotateX(0) translateZ(${diceSize / 2}px) translateX(${-(diceSize / 2)}px)` },
-                                    { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation + 360}deg) rotateX(0) translateZ(${diceSize / 2}px) translateX(${-(diceSize / 2)}px)` }
+                                    { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation}deg) rotateX(0) translateZ(${this.diceSize / 2}px) translateX(${-(this.diceSize / 2)}px)` },
+                                    { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation + 360}deg) rotateX(0) translateZ(${this.diceSize / 2}px) translateX(${-(this.diceSize / 2)}px)` }
                                 ], {
                                     // timing options
                                     duration: oneTurnDuration,
@@ -247,7 +254,7 @@ function Home() {
                             const playBakcRateIntervalId = setInterval(() => {
                                 playBackRateUpdate();
                             }, 10);
-                            oneTurnDuration = ((4 * diceSize) / Vi);
+                            oneTurnDuration = ((4 * this.diceSize) / Vi);
                             setDiceTurnAnimation2(getCurrentYRotation());
                             setDiceMoveAnimation(Vxi, Vyi);
 
@@ -280,8 +287,8 @@ function Home() {
                                     const impactCurrentYRotation = getCurrentYRotation();
                                     const impactVelocityVector = { x: getVelocityVector().x, y: getVelocityVector().y };
                                     const impactVelocity = getVelocity();
-                                    oneTurnDuration = ((4 * diceSize) / impactVelocity);
-                                    if (impactVelocity < fastReboundVelocity && impactVelocity > stopVelocity) oneTurnDuration = ((4 * diceSize) / (impactVelocity * 1.75)); //Giro mas rapido al rebotar a menos de "fastReboundVelocity". 
+                                    oneTurnDuration = ((4 * this.diceSize) / impactVelocity);
+                                    if (impactVelocity < fastReboundVelocity && impactVelocity > stopVelocity) oneTurnDuration = ((4 * this.diceSize) / (impactVelocity * 1.75)); //Giro mas rapido al rebotar a menos de "fastReboundVelocity". 
 
                                     if (reboundSide === "left" || reboundSide === "right") {
                                         if (impactVelocity >= stopVelocity) {
@@ -359,8 +366,8 @@ function Home() {
                         if (this.dice) {
                             motionLog.push({ x: e.clientX, y: e.clientY, t: Date.now() });
                             motionLog.shift();
-                            this.dice.style.left = `${e.clientX - (diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
-                            this.dice.style.top = `${e.clientY - (diceSize / 2)}px`;
+                            this.dice.style.left = `${e.clientX - (this.diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
+                            this.dice.style.top = `${e.clientY - (this.diceSize / 2)}px`;
                         }
                     }
                 }
@@ -371,8 +378,8 @@ function Home() {
                         animation.cancel();
                     })
                     this.diceTurnAnimateCont?.classList.add("diceTurned");
-                    this.dice!.style.left = `${e.clientX - (diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
-                    this.dice!.style.top = `${e.clientY - (diceSize / 2)}px`;
+                    this.dice!.style.left = `${e.clientX - (this.diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
+                    this.dice!.style.top = `${e.clientY - (this.diceSize / 2)}px`;
                     isMouseDown = true;
                 }
 
