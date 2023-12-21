@@ -9,6 +9,7 @@ function Home() {
 
     useEffect(() => {
 
+        type SideRebound = "left" | "right" | "top" | "bottom" | null;
         class Dice {
 
             constructor(public number: number, public xPos: number, public yPos: number) {
@@ -70,6 +71,7 @@ function Home() {
             private isReboundRight = false;
             private isReboundTop = false;
             private isReboundBottom = false;
+            private next = true;
                                             
             setVelocityVector = (x: number, y: number) => {
                 this.velocityVector.x = x;
@@ -178,6 +180,89 @@ function Home() {
                     easing: "linear"
                 });
             }
+
+            private bordersReboundcontrolInit = () => {
+
+                const playBakcRateIntervalId = setInterval(() => {
+                    this.playBackRateUpdate();
+                }, 10);
+
+                const stopControl = () => {
+                    if (this.getVelocity() < this.stopVelocity) {
+                        const actualYrotation = this.getCurrentYRotation();
+                        if (
+                            (Math.abs(actualYrotation) % 90 <= this.stopDegreesTolerance) ||
+                            (Math.abs(actualYrotation) < 90 && Math.abs(actualYrotation) >= (90 - this.stopDegreesTolerance)) //Incluimos angulos menores y cercanos a 90º como 85º que  no son "detectados" por el algoritmo con "%"
+                        ) {
+                            clearInterval(controlIntervalId);
+                            clearInterval(playBakcRateIntervalId);
+                            this.diceTurnAnimation?.pause();
+                            this.diceMoveAnimation?.pause();
+                        }
+                    }
+                }
+                    
+                let reboundSide: SideRebound = null;
+                const reboundControl = () => {
+                    this.next = false;
+
+                    if (this.getSideDistance.left() <= 0 && !this.isReboundLeft) {
+                        reboundSide = "left"
+                    } else if (this.getSideDistance.right() <= 0 && !this.isReboundRight) {
+                        reboundSide = "right";
+                    } else if (this.getSideDistance.top() <= 0 && !this.isReboundTop) {
+                        reboundSide = "top";
+                    } else if (this.getSideDistance.bottom() <= 0 && !this.isReboundBottom) {
+                        reboundSide = "bottom";
+                    } else {
+                        reboundSide = null;
+                    }
+
+                    if (reboundSide) {
+                        const impactPosition = { x: this.getPosition().x, y: this.getPosition().y };
+                        const impactCurrentYRotation = this.getCurrentYRotation();
+
+                        if (reboundSide === "left" || reboundSide === "right") {
+                            this.setPosition(impactPosition.x, impactPosition.y);
+                            this.setVelocityVector(-this.velocityVector.x, this.velocityVector.y);
+                            this.diceTurnAnimation?.cancel();
+                            this.diceMoveAnimation?.cancel();
+                            this.setdiceTurnAnimation(impactCurrentYRotation);
+                            this.setdiceMoveAnimation(this.velocityVector.x, this.velocityVector.y);
+                            if (reboundSide === "left") {
+                                this.isReboundRight = false;
+                                this.isReboundLeft = true;
+                            } else {
+                                this.isReboundRight = true;
+                                this.isReboundLeft = false;
+                            }
+                        } else if (reboundSide === "top" || reboundSide === "bottom") {
+                            this.setPosition(impactPosition.x, impactPosition.y);
+                            this.setVelocityVector(this.velocityVector.x, -this.velocityVector.y);
+                            this.diceTurnAnimation?.cancel();
+                            this.diceMoveAnimation?.cancel();
+                            this.setdiceTurnAnimation(impactCurrentYRotation);
+                            this.setdiceMoveAnimation(this.velocityVector.x, this.velocityVector.y);
+                            if (reboundSide === "top") {
+                                this.isReboundTop = true;
+                                this.isReboundBottom = false;
+                            } else {
+                                this.isReboundTop = false;
+                                this.isReboundBottom = true;
+                            }
+                        }
+                    }
+                    this.next = true;
+                }
+
+                const controlIntervalId = setInterval(() => {
+                    if (this.next) {
+                        reboundControl();
+                        stopControl();
+                    }
+                    // console.log(motionDuration, Date.now() - ti, getVelocity().toFixed(2))
+                }, 1);
+            }
            
             init = () => {
                 this.getDomElements();
@@ -219,94 +304,11 @@ function Home() {
 
                             this.motionDuration = Math.abs((this.stopVelocity - Vi) / (this.celeration));                                             //La duracion del movimiento del dato hasta que se queda quieto es proporcional a la velocidad de tiro
                             this.oneTurnDuration = (4 * this.diceSize) / Vi;
-                                                      
-                            const stopControl = () => {
-                                if (this.getVelocity() < this.stopVelocity) {
-                                    const actualYrotation = this.getCurrentYRotation();
-                                    if (
-                                        (Math.abs(actualYrotation) % 90 <= this.stopDegreesTolerance) ||
-                                        (Math.abs(actualYrotation) < 90 && Math.abs(actualYrotation) >= (90 - this.stopDegreesTolerance)) //Incluimos angulos menores y cercanos a 90º como 85º que  no son "detectados" por el algoritmo con "%"
-                                    ) {
-                                        clearInterval(controlIntervalId);
-                                        clearInterval(playBakcRateIntervalId);
-                                        this.diceTurnAnimation?.pause();
-                                        this.diceMoveAnimation?.pause();
-                                    }
-                                } 
-                            }
-                                                                                 
                             this.ti = Date.now();
-                            const playBakcRateIntervalId = setInterval(() => {
-                                this.playBackRateUpdate();
-                            }, 10);
                             this.oneTurnDuration = ((4 * this.diceSize) / Vi);
                             this.setdiceTurnAnimation(this.getCurrentYRotation());
                             this.setdiceMoveAnimation(Vxi, Vyi);
-                                                       
-                            type SideRebound = "left" | "right" | "top" | "bottom" | null;
-                            let reboundSide: SideRebound = null;
-
-                            const reboundControl = () => {
-                                next = false;
-
-                                if (this.getSideDistance.left() <= 0 && !this.isReboundLeft) {
-                                    reboundSide = "left"
-                                } else if (this.getSideDistance.right() <= 0 && !this.isReboundRight) {
-                                    reboundSide = "right";
-                                } else if (this.getSideDistance.top() <= 0 && !this.isReboundTop) {
-                                    reboundSide = "top";
-                                } else if (this.getSideDistance.bottom() <= 0 && !this.isReboundBottom) {
-                                    reboundSide = "bottom";
-                                } else {
-                                    reboundSide = null;
-                                }
-
-                                if (reboundSide) {
-                                    const impactPosition = { x: this.getPosition().x, y: this.getPosition().y };
-                                    const impactCurrentYRotation = this.getCurrentYRotation();
-                                   
-                                    if (reboundSide === "left" || reboundSide === "right") {
-                                        this.setPosition(impactPosition.x, impactPosition.y);
-                                        this.setVelocityVector(-this.velocityVector.x, this.velocityVector.y);
-                                        this.diceTurnAnimation?.cancel();
-                                        this.diceMoveAnimation?.cancel();
-                                        this.setdiceTurnAnimation(impactCurrentYRotation);
-                                        this.setdiceMoveAnimation(this.velocityVector.x, this.velocityVector.y);
-                                        if (reboundSide === "left") {
-                                            this.isReboundRight = false;
-                                            this.isReboundLeft = true;
-                                        } else {
-                                            this.isReboundRight = true;
-                                            this.isReboundLeft = false;
-                                        }
-                                    } else if (reboundSide === "top" || reboundSide === "bottom") {
-                                        this.setPosition(impactPosition.x, impactPosition.y);
-                                        this.setVelocityVector(this.velocityVector.x, -this.velocityVector.y);
-                                        this.diceTurnAnimation?.cancel();
-                                        this.diceMoveAnimation?.cancel();
-                                        this.setdiceTurnAnimation(impactCurrentYRotation);
-                                        this.setdiceMoveAnimation(this.velocityVector.x, this.velocityVector.y);
-                                        if (reboundSide === "top") {
-                                            this.isReboundTop = true;
-                                            this.isReboundBottom = false;
-                                        } else {
-                                            this.isReboundTop = false;
-                                            this.isReboundBottom = true;
-                                        }
-                                    }
-                                }
-                                next = true;
-                            }
-
-                            let next = true;
-                            const controlIntervalId = setInterval(() => {
-                                if (next) {
-                                    reboundControl();
-                                    stopControl();
-                                }
-                                // console.log(motionDuration, Date.now() - ti, getVelocity().toFixed(2))
-                            }, 1);
-
+                            this.bordersReboundcontrolInit(); 
                         }
                         isMouseDown = false;
                     }
