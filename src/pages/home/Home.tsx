@@ -210,6 +210,11 @@ function Home() {
             }
 
             private bordersReboundcontrolInit = () => {
+
+                this.isReboundLeft = false;
+                this.isReboundRight = false;
+                this.isReboundTop = false;
+                this.isReboundBottom = false;
                                                     
                 let next = true;
 
