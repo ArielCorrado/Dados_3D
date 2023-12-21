@@ -57,12 +57,34 @@ function Home() {
                 this.diceSideExternals = diceSideExternals;
             }
 
+            private stopVelocity = 0.6;
+            private celeration = - 0.0025;
+            private Vmax = 5;
+            private stopDegreesTolerance = 5;
             private velocityVector = { x: 0, y: 0 };
-
+            private decelerationFuncMin = this.stopVelocity / this.Vmax;
+            private motionDuration = 0;
+            private oneTurnDuration = 0;
+            private ti = 0;
+         
             setVelocityVector = (x: number, y: number) => {
                 this.velocityVector.x = x;
                 this.velocityVector.y = y;
             }
+
+            decelerationFunc = (t: number): number => {                              
+                const result = ((- 1 / this.motionDuration) * t) + 1;
+                return result > this.decelerationFuncMin ? result : this.decelerationFuncMin * 0.8;
+            }
+
+            getVelocityVector = () => {
+                const t = Date.now() - this.ti;
+                const Vx = this.velocityVector.x * this.decelerationFunc(t);
+                const Vy = this.velocityVector.y * this.decelerationFunc(t);
+                return { x: Vx, y: Vy };
+            }
+
+            getVelocity = () => Math.sqrt((this.getVelocityVector().x ** 2) + (this.getVelocityVector().y ** 2));
             
             getPosition = () => {
                 const diceRect = this.dice?.getBoundingClientRect();
@@ -88,12 +110,7 @@ function Home() {
                 this.getDomElements();
                 this.dice!.style.left = `${this.xPos - (this.diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
                 this.dice!.style.top = `${this.yPos - (this.diceSize / 2)}px`;
-                                
-                const stopVelocity = 0.6;
-                const aceleration = - 0.0025;
-                const Vmax = 5;
-                const stopDegreesTolerance = 5;
-                
+                               
                 let isMouseDown = false;
                 let isMouseOver = false;
                 const motionLog: { x: number, y: number, t: number }[] = new Array(5);
@@ -119,23 +136,23 @@ function Home() {
                             this.setVelocityVector(Vxi, Vyi);
                             let Vi = Math.sqrt((this.velocityVector.x ** 2) + (this.velocityVector.y ** 2));
 
-                            if (Vi > Vmax) {
-                                this.velocityVector.x = Vmax * Math.cos((shootingAngle / 180) * Math.PI);
-                                this.velocityVector.y = - Vmax * Math.sin((shootingAngle / 180) * Math.PI);
+                            if (Vi > this.Vmax) {
+                                this.velocityVector.x = this.Vmax * Math.cos((shootingAngle / 180) * Math.PI);
+                                this.velocityVector.y = - this.Vmax * Math.sin((shootingAngle / 180) * Math.PI);
                                 Vxi = this.velocityVector.x;
                                 Vyi = this.velocityVector.y;
-                                Vi = Vmax;
+                                Vi = this.Vmax;
                             }                    
-                          
-                            let motionDuration = Math.abs((stopVelocity - Vi) / aceleration);                                             //La duracion del movimiento del dato hasta que se queda quieto es proporcional a la velocidad de tiro
-                            let oneTurnDuration = (4 * this.diceSize) / Vi;
-                            
+
+                            this.motionDuration = Math.abs((this.stopVelocity - Vi) / (this.celeration));                                             //La duracion del movimiento del dato hasta que se queda quieto es proporcional a la velocidad de tiro
+                            this.oneTurnDuration = (4 * this.diceSize) / Vi;
+                                                      
                             const stopControl = () => {
-                                if (getVelocity() < stopVelocity) {
+                                if (this.getVelocity() < this.stopVelocity) {
                                     const actualYrotation = this.getCurrentYRotation();
                                     if (
-                                        (Math.abs(actualYrotation) % 90 <= stopDegreesTolerance) ||
-                                        (Math.abs(actualYrotation) < 90 && Math.abs(actualYrotation) >= (90 - stopDegreesTolerance)) //Incluimos angulos menores y cercanos a 90º como 85º que  no son "detectados" por el algoritmo con "%"
+                                        (Math.abs(actualYrotation) % 90 <= this.stopDegreesTolerance) ||
+                                        (Math.abs(actualYrotation) < 90 && Math.abs(actualYrotation) >= (90 - this.stopDegreesTolerance)) //Incluimos angulos menores y cercanos a 90º como 85º que  no son "detectados" por el algoritmo con "%"
                                     ) {
                                         clearInterval(controlIntervalId);
                                         clearInterval(playBakcRateIntervalId);
@@ -146,30 +163,15 @@ function Home() {
                                     // this.diceTurnAnimation?.pause();
                                 }
                             }
-                                             
-                            const decelerationFuncMin = stopVelocity / Vmax;
-                            const decelerationFunc = (t: number): number => {                              
-                                const result = ((- 1 / motionDuration) * t) + 1;
-                                return result > decelerationFuncMin ? result : decelerationFuncMin * 0.8;
-                            }
-                                  
+                                                                                                                 
                             const playBackRateUpdate = () => {
-                                const t = Date.now() - ti;
+                                const t = Date.now() - this.ti;
                                 if (this.diceTurnAnimation && this.diceMoveAnimation) {
-                                    this.diceTurnAnimation.playbackRate = decelerationFunc(t);
-                                    this.diceMoveAnimation.playbackRate = decelerationFunc(t);
+                                    this.diceTurnAnimation.playbackRate = this.decelerationFunc(t);
+                                    this.diceMoveAnimation.playbackRate = this.decelerationFunc(t);
                                 }
                             }                                                   
-
-                            const getVelocityVector = () => {
-                                const t = Date.now() - ti;
-                                const Vx = this.velocityVector.x * decelerationFunc(t);
-                                const Vy = this.velocityVector.y * decelerationFunc(t);
-                                return { x: Vx, y: Vy };
-                            }
-                            
-                            const getVelocity = () => Math.sqrt((getVelocityVector().x ** 2) + (getVelocityVector().y ** 2));
-                            
+                                                                             
                             const getSideDistance = {           /* Calcula la distancia del dado a un determinado borde de la ventana visual (window) */
                                 left: () => {
                                     const sides = this.diceSideExternals;
@@ -206,7 +208,7 @@ function Home() {
                                     { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation + 360}deg) rotateX(0) translateZ(${this.diceSize / 2}px) translateX(${-(this.diceSize / 2)}px)` }
                                 ], {
                                     // timing options
-                                    duration: oneTurnDuration,
+                                    duration: this.oneTurnDuration,
                                     iterations: Infinity,
                                     fill: "forwards",
                                     easing: "linear"
@@ -215,7 +217,7 @@ function Home() {
 
                             const setdiceMoveAnimation = (Vx: number, Vy: number) => {      /* Animacion de translacion del dado */
 
-                                const timeLeft = motionDuration;
+                                const timeLeft = this.motionDuration;
                                 const reboundAx = Vx * timeLeft;
                                 const reboundAy = Vy * timeLeft;
 
@@ -231,11 +233,11 @@ function Home() {
                                 });
                             }
 
-                            const ti = Date.now();
+                            this.ti = Date.now();
                             const playBakcRateIntervalId = setInterval(() => {
                                 playBackRateUpdate();
                             }, 10);
-                            oneTurnDuration = ((4 * this.diceSize) / Vi);
+                            this.oneTurnDuration = ((4 * this.diceSize) / Vi);
                             setdiceTurnAnimation2(this.getCurrentYRotation());
                             setdiceMoveAnimation(Vxi, Vyi);
                             
