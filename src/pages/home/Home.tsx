@@ -164,7 +164,7 @@ function Home() {
                                 return { x: Vx, y: Vy };
                             }
                             
-                            const getVelocity = () => Math.sqrt(getVelocityVector().x ** 2 + getVelocityVector().y ** 2);
+                            const getVelocity = () => Math.sqrt((getVelocityVector().x ** 2) + (getVelocityVector().y ** 2));
                             
                             const getSideDistance = {           /* Calcula la distancia del dado a un determinado borde de la ventana visual (window) */
                                 left: () => {
@@ -194,7 +194,7 @@ function Home() {
                             }
 
                             const setdiceTurnAnimation2 = (currentYRotation: number) => {       /* Animacion de rotacion del dado */
-                                const reboundDirectionVector = { x: getVelocityVector().x, y: getVelocityVector().y };
+                                const reboundDirectionVector = { x: velocityVector.x, y: velocityVector.y };
                                 const reboundgAngle = Math.floor(Math.atan2(reboundDirectionVector.y, reboundDirectionVector.x) * 180 / Math.PI);     //Angulo de tiro
                                 this.diceTurnAnimation = this.diceTurnAnimateCont?.animate([
                                     // keyframes
