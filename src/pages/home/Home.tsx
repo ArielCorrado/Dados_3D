@@ -66,7 +66,11 @@ function Home() {
             private motionDuration = 0;
             private oneTurnDuration = 0;
             private ti = 0;
-         
+            private isReboundLeft = false;
+            private isReboundRight = false;
+            private isReboundTop = false;
+            private isReboundBottom = false;
+                                            
             setVelocityVector = (x: number, y: number) => {
                 this.velocityVector.x = x;
                 this.velocityVector.y = y;
@@ -104,6 +108,67 @@ function Home() {
                 const transformMatrix = new DOMMatrix(computedStyle.transform);
                 const rotateYAngle = Math.atan2(transformMatrix.m13, transformMatrix.m33) * (180 / Math.PI);
                 return rotateYAngle; // Return the Y rotation angle in degrees
+            }
+
+            private getSideDistance = {           /* Calcula la distancia del dado a un determinado borde de la ventana visual (window) */
+                left: () => {
+                    const sides = this.diceSideExternals;
+                    const sidesArr = Array.from(sides!)
+                    const sidesLeft = sidesArr.map((side) => side.getBoundingClientRect().left)
+                    return Math.min(...sidesLeft);
+                },
+                right: () => {
+                    const sides = this.diceSideExternals;
+                    const sidesArr = Array.from(sides!)
+                    const sidesRight = sidesArr.map((side) => window.innerWidth - side.getBoundingClientRect().right)
+                    return Math.min(...sidesRight);
+                },
+                top: () => {
+                    const sides = this.diceSideExternals;
+                    const sidesArr = Array.from(sides!)
+                    const sidesTop = sidesArr.map((side) => side.getBoundingClientRect().top)
+                    return Math.min(...sidesTop);
+                },
+                bottom: () => {
+                    const sides = this.diceSideExternals;
+                    const sidesArr = Array.from(sides!)
+                    const sidesBottom = sidesArr.map((side) => window.innerHeight - side.getBoundingClientRect().bottom)
+                    return Math.min(...sidesBottom);
+                }
+            }
+
+            private setdiceTurnAnimation = (currentYRotation: number) => {       /* Animacion de rotacion del dado */
+                const reboundDirectionVector = { x: this.velocityVector.x, y: this.velocityVector.y };
+                const reboundgAngle = Math.floor(Math.atan2(reboundDirectionVector.y, reboundDirectionVector.x) * 180 / Math.PI);     //Angulo de tiro
+                this.diceTurnAnimation = this.diceTurnAnimateCont?.animate([
+                    // keyframes
+                    { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation}deg) rotateX(0) translateZ(${this.diceSize / 2}px) translateX(${-(this.diceSize / 2)}px)` },
+                    { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation + 360}deg) rotateX(0) translateZ(${this.diceSize / 2}px) translateX(${-(this.diceSize / 2)}px)` }
+                ], {
+                    // timing options
+                    duration: this.oneTurnDuration,
+                    iterations: Infinity,
+                    fill: "forwards",
+                    easing: "linear"
+                });
+            }
+
+            private setdiceMoveAnimation = (Vx: number, Vy: number) => {      /* Animacion de translacion del dado */
+
+                const timeLeft = this.motionDuration;
+                const reboundAx = Vx * timeLeft;
+                const reboundAy = Vy * timeLeft;
+
+                this.diceMoveAnimation = this.dice?.animate([
+                    // keyframes
+                    { transform: `translateX(0) translateY(0)` },
+                    { transform: `translateX(${reboundAx}px) translateY(${reboundAy}px)` }
+                ], {
+                    // timing options
+                    duration: timeLeft,
+                    fill: "forwards",
+                    easing: "linear"
+                });
             }
            
             init = () => {
@@ -159,9 +224,7 @@ function Home() {
                                         this.diceTurnAnimation?.pause();
                                         this.diceMoveAnimation?.pause();
                                     }
-                                } else if (Vi < 1.1) {
-                                    // this.diceTurnAnimation?.pause();
-                                }
+                                } 
                             }
                                                                                                                  
                             const playBackRateUpdate = () => {
@@ -171,95 +234,28 @@ function Home() {
                                     this.diceMoveAnimation.playbackRate = this.decelerationFunc(t);
                                 }
                             }                                                   
-                                                                             
-                            const getSideDistance = {           /* Calcula la distancia del dado a un determinado borde de la ventana visual (window) */
-                                left: () => {
-                                    const sides = this.diceSideExternals;
-                                    const sidesArr = Array.from(sides!)
-                                    const sidesLeft = sidesArr.map((side) => side.getBoundingClientRect().left)
-                                    return Math.min(...sidesLeft);
-                                },
-                                right: () => {
-                                    const sides = this.diceSideExternals;
-                                    const sidesArr = Array.from(sides!)
-                                    const sidesRight = sidesArr.map((side) => window.innerWidth - side.getBoundingClientRect().right)
-                                    return Math.min(...sidesRight);
-                                },
-                                top: () => {
-                                    const sides = this.diceSideExternals;
-                                    const sidesArr = Array.from(sides!)
-                                    const sidesTop = sidesArr.map((side) => side.getBoundingClientRect().top)
-                                    return Math.min(...sidesTop);
-                                },
-                                bottom: () => {
-                                    const sides = this.diceSideExternals;
-                                    const sidesArr = Array.from(sides!)
-                                    const sidesBottom = sidesArr.map((side) => window.innerHeight - side.getBoundingClientRect().bottom)
-                                    return Math.min(...sidesBottom);
-                                }
-                            }
-
-                            const setdiceTurnAnimation2 = (currentYRotation: number) => {       /* Animacion de rotacion del dado */
-                                const reboundDirectionVector = { x: this.velocityVector.x, y: this.velocityVector.y };
-                                const reboundgAngle = Math.floor(Math.atan2(reboundDirectionVector.y, reboundDirectionVector.x) * 180 / Math.PI);     //Angulo de tiro
-                                this.diceTurnAnimation = this.diceTurnAnimateCont?.animate([
-                                    // keyframes
-                                    { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation}deg) rotateX(0) translateZ(${this.diceSize / 2}px) translateX(${-(this.diceSize / 2)}px)` },
-                                    { transform: `rotateZ(${reboundgAngle}deg) rotateY(${-currentYRotation + 360}deg) rotateX(0) translateZ(${this.diceSize / 2}px) translateX(${-(this.diceSize / 2)}px)` }
-                                ], {
-                                    // timing options
-                                    duration: this.oneTurnDuration,
-                                    iterations: Infinity,
-                                    fill: "forwards",
-                                    easing: "linear"
-                                });
-                            }
-
-                            const setdiceMoveAnimation = (Vx: number, Vy: number) => {      /* Animacion de translacion del dado */
-
-                                const timeLeft = this.motionDuration;
-                                const reboundAx = Vx * timeLeft;
-                                const reboundAy = Vy * timeLeft;
-
-                                this.diceMoveAnimation = this.dice?.animate([
-                                    // keyframes
-                                    { transform: `translateX(0) translateY(0)` },
-                                    { transform: `translateX(${reboundAx}px) translateY(${reboundAy}px)` }
-                                ], {
-                                    // timing options
-                                    duration: timeLeft,
-                                    fill: "forwards",
-                                    easing: "linear"
-                                });
-                            }
-
+                                                     
                             this.ti = Date.now();
                             const playBakcRateIntervalId = setInterval(() => {
                                 playBackRateUpdate();
                             }, 10);
                             this.oneTurnDuration = ((4 * this.diceSize) / Vi);
-                            setdiceTurnAnimation2(this.getCurrentYRotation());
-                            setdiceMoveAnimation(Vxi, Vyi);
-                            
-                            let isReboundLeft = false;
-                            let isReboundRight = false;
-                            let isReboundTop = false;
-                            let isReboundBottom = false;
-
-                            // const fastReboundVelocity = 1;
+                            this.setdiceTurnAnimation(this.getCurrentYRotation());
+                            this.setdiceMoveAnimation(Vxi, Vyi);
+                                                       
                             type SideRebound = "left" | "right" | "top" | "bottom" | null;
                             let reboundSide: SideRebound = null;
-                           
+
                             const reboundControl = () => {
                                 next = false;
 
-                                if (getSideDistance.left() <= 0 && !isReboundLeft) {
+                                if (this.getSideDistance.left() <= 0 && !this.isReboundLeft) {
                                     reboundSide = "left"
-                                } else if (getSideDistance.right() <= 0 && !isReboundRight) {
+                                } else if (this.getSideDistance.right() <= 0 && !this.isReboundRight) {
                                     reboundSide = "right";
-                                } else if (getSideDistance.top() <= 0 && !isReboundTop) {
+                                } else if (this.getSideDistance.top() <= 0 && !this.isReboundTop) {
                                     reboundSide = "top";
-                                } else if (getSideDistance.bottom() <= 0 && !isReboundBottom) {
+                                } else if (this.getSideDistance.bottom() <= 0 && !this.isReboundBottom) {
                                     reboundSide = "bottom";
                                 } else {
                                     reboundSide = null;
@@ -274,28 +270,28 @@ function Home() {
                                         this.setVelocityVector(-this.velocityVector.x, this.velocityVector.y);
                                         this.diceTurnAnimation?.cancel();
                                         this.diceMoveAnimation?.cancel();
-                                        setdiceTurnAnimation2(impactCurrentYRotation);
-                                        setdiceMoveAnimation(this.velocityVector.x, this.velocityVector.y);
+                                        this.setdiceTurnAnimation(impactCurrentYRotation);
+                                        this.setdiceMoveAnimation(this.velocityVector.x, this.velocityVector.y);
                                         if (reboundSide === "left") {
-                                            isReboundRight = false;
-                                            isReboundLeft = true;
+                                            this.isReboundRight = false;
+                                            this.isReboundLeft = true;
                                         } else {
-                                            isReboundRight = true;
-                                            isReboundLeft = false;
+                                            this.isReboundRight = true;
+                                            this.isReboundLeft = false;
                                         }
                                     } else if (reboundSide === "top" || reboundSide === "bottom") {
                                         this.setPosition(impactPosition.x, impactPosition.y);
                                         this.setVelocityVector(this.velocityVector.x, -this.velocityVector.y);
                                         this.diceTurnAnimation?.cancel();
                                         this.diceMoveAnimation?.cancel();
-                                        setdiceTurnAnimation2(impactCurrentYRotation);
-                                        setdiceMoveAnimation(this.velocityVector.x, this.velocityVector.y);
+                                        this.setdiceTurnAnimation(impactCurrentYRotation);
+                                        this.setdiceMoveAnimation(this.velocityVector.x, this.velocityVector.y);
                                         if (reboundSide === "top") {
-                                            isReboundTop = true;
-                                            isReboundBottom = false;
+                                            this.isReboundTop = true;
+                                            this.isReboundBottom = false;
                                         } else {
-                                            isReboundTop = false;
-                                            isReboundBottom = true;
+                                            this.isReboundTop = false;
+                                            this.isReboundBottom = true;
                                         }
                                     }
                                 }
