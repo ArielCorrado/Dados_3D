@@ -80,6 +80,14 @@ function Home() {
                 const result = ((- 1 / this.motionDuration) * t) + 1;
                 return result > this.decelerationFuncMin ? result : this.decelerationFuncMin * 0.8;
             }
+                                                                                                  
+            playBackRateUpdate = () => {
+                const t = Date.now() - this.ti;
+                if (this.diceTurnAnimation && this.diceMoveAnimation) {
+                    this.diceTurnAnimation.playbackRate = this.decelerationFunc(t);
+                    this.diceMoveAnimation.playbackRate = this.decelerationFunc(t);
+                }
+            }    
 
             getVelocityVector = () => {
                 const t = Date.now() - this.ti;
@@ -226,18 +234,10 @@ function Home() {
                                     }
                                 } 
                             }
-                                                                                                                 
-                            const playBackRateUpdate = () => {
-                                const t = Date.now() - this.ti;
-                                if (this.diceTurnAnimation && this.diceMoveAnimation) {
-                                    this.diceTurnAnimation.playbackRate = this.decelerationFunc(t);
-                                    this.diceMoveAnimation.playbackRate = this.decelerationFunc(t);
-                                }
-                            }                                                   
-                                                     
+                                                                                 
                             this.ti = Date.now();
                             const playBakcRateIntervalId = setInterval(() => {
-                                playBackRateUpdate();
+                                this.playBackRateUpdate();
                             }, 10);
                             this.oneTurnDuration = ((4 * this.diceSize) / Vi);
                             this.setdiceTurnAnimation(this.getCurrentYRotation());
