@@ -42,7 +42,7 @@ function Home() {
             
             readonly jsx: JSX.Element
             
-            private readonly diceSize: number = 100;   // El ancho del dado (en px) tiene que coincidir con el del css 
+            readonly diceSize: number = 100;   // El ancho del dado (en px) tiene que coincidir con el del css 
             private dice: HTMLDivElement | null = null;
             private diceTurnAnimateCont: HTMLDivElement | null = null;
             private diceSideExternals: NodeListOf<Element> | undefined = undefined;
@@ -280,7 +280,7 @@ function Home() {
                 }, 1);
             }
            
-            init = () => {
+            place = () => {
                 this.getDomElements();
                 this.dice!.style.left = `${this.xPos - (this.diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
                 this.dice!.style.top = `${this.yPos - (this.diceSize / 2)}px`;
@@ -383,16 +383,38 @@ function Home() {
             }
         }
 
+        const register = (dice0: Dice, dice1: Dice) => {
+
+            const getDistance = (): number => {
+                const xDistance = Math.abs(dice0.getPosition().x - dice1.getPosition().x);
+                const yDistance = Math.abs(dice0.getPosition().y - dice1.getPosition().y);
+                return Math.sqrt((xDistance ** 2) + (yDistance ** 2));
+            }
+
+            const impactController = () => {
+                if (getDistance() <= dice0.diceSize) {
+                    document.body.getAnimations({subtree: true}).forEach((animation) => {
+                        animation.pause();
+                    })
+                }
+            }
+
+            setInterval(() =>{
+                impactController();
+            },1)
+        }
+
         const dice0 = new Dice(0, 200, 500);
         const dice1 = new Dice(1, 500, 500);
 
         setDices([dice0.jsx, dice1.jsx]);
 
         setTimeout(() => {
-            dice0.init();
-            dice1.init();
+            dice0.place();
+            dice1.place();
+            register(dice0, dice1);
         }, 100);
-
+        
     }, [])
 
     return (
