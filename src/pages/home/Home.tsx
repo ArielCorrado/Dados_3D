@@ -183,7 +183,9 @@ function Home() {
             }
 
             private stopControlInit = () => {
+                let next = true;
                 const stopControl = () => {
+                    next = false;
                     if (this.getVelocity() < this.stopVelocity) {
                         const actualYrotation = this.getCurrentYRotation();
                         if (
@@ -197,9 +199,10 @@ function Home() {
                             this.diceMoveAnimation?.pause();
                         }
                     }
+                    next = true
                 }
                 const stopControlIntervalId = setInterval(() => {
-                    stopControl();
+                    if(next) stopControl();
                 }, 10)
             }
 
