@@ -59,8 +59,8 @@ function Home() {
             }
 
             private stopVelocity = 0.6;
-            private celeration = - 0.0025;
-            private Vmax = 5;
+            private celeration = - 0.0015;
+            private Vmax = 4;
             private stopDegreesTolerance = 5;
             private velocityVector = { x: 0, y: 0 };
             private decelerationFuncMin = this.stopVelocity / this.Vmax;
@@ -370,7 +370,13 @@ function Home() {
 
         const register = (dice0: Dice, dice1: Dice) => {
 
-            const getDistance = (): number => {
+            const getCentersDistance = () => {
+                const xDistance = Math.abs(dice0.getPosition().x - dice1.getPosition().x);
+                const yDistance = Math.abs(dice0.getPosition().y - dice1.getPosition().y);
+                return Math.sqrt((xDistance ** 2) + (yDistance ** 2));
+            }
+
+            const isCollision = (): boolean => {
                 const dice0Left = dice0.getSideDistance.left();
                 const dice0Right = dice0.getSideDistance.right();
                 const dice0Width = window.innerWidth - dice0Left - dice0Right;
@@ -383,10 +389,11 @@ function Home() {
                 const dice1limitLeft = dice1Left;
                 const dice1limitRight = dice1limitLeft + dice1Width;
 
+                let xDistance = 0;
                 if (dice0limitRight < dice1limitLeft) {
-                    return dice1limitLeft - dice0limitRight
+                    xDistance = dice1limitLeft - dice0limitRight
                 } else if (dice0limitLeft > dice1limitRight) {
-                    return dice0limitLeft - dice1limitRight
+                    xDistance = dice0limitLeft - dice1limitRight
                 }
                 
                 const dice0Top = dice0.getSideDistance.top();
@@ -401,20 +408,21 @@ function Home() {
                 const dice1limitTop = dice1Top;
                 const dice1limitBottom = dice1limitTop + dice1Height;
 
+                let yDistance = 0;
                 if (dice0limitBottom < dice1limitTop) {
-                    return dice1limitTop - dice0limitBottom
+                    yDistance = dice1limitTop - dice0limitBottom
                 } else if (dice0limitTop > dice1limitBottom) {
-                    return dice0limitTop - dice1limitBottom
+                    yDistance = dice0limitTop - dice1limitBottom
                 }
-
-                return 0;
+                
+                return xDistance <= 0 && yDistance <= 0 && getCentersDistance() <= dice0.diceSize * 1.25 ? true : false;
             }
 
             const impactController = () => {
-                if (getDistance() <= 0) {
+                if (isCollision()) {
                     dice0.diceMoveAnimation?.pause();
-                    dice0.diceTurnAnimation?.pause();
                     dice1.diceMoveAnimation?.pause();
+                    dice0.diceTurnAnimation?.pause();
                     dice1.diceTurnAnimation?.pause();
                 }
                 requestAnimationFrame(impactController);
@@ -423,8 +431,8 @@ function Home() {
            requestAnimationFrame(impactController);
         }
 
-        const dice0 = new Dice(0, 1000, 500);
-        const dice1 = new Dice(1, 960, 500);
+        const dice0 = new Dice(0, 960, 500);
+        const dice1 = new Dice(1, 1500, 500);
 
         setDices([dice0.jsx, dice1.jsx]);
 
