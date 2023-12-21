@@ -71,6 +71,8 @@ function Home() {
             private isReboundRight = false;
             private isReboundTop = false;
             private isReboundBottom = false;
+            private playBakcRateIntervalId: NodeJS.Timer | undefined = undefined;
+            private bordersReboundControlIntervalId: NodeJS.Timer | undefined = undefined;
                                                         
             setVelocityVector = (x: number, y: number) => {
                 this.velocityVector.x = x;
@@ -180,12 +182,7 @@ function Home() {
                 });
             }
 
-            private bordersReboundcontrolInit = () => {
-
-                const playBakcRateIntervalId = setInterval(() => {
-                    this.playBackRateUpdate();
-                }, 10);
-
+            private stopControlInit = () => {
                 const stopControl = () => {
                     if (this.getVelocity() < this.stopVelocity) {
                         const actualYrotation = this.getCurrentYRotation();
@@ -194,18 +191,28 @@ function Home() {
                             (Math.abs(actualYrotation) < 90 && Math.abs(actualYrotation) >= (90 - this.stopDegreesTolerance)) //Incluimos angulos menores y cercanos a 90º como 85º que  no son "detectados" por el algoritmo con "%"
                         ) {
                             clearInterval(stopControlIntervalId);
-                            clearInterval(bordersReboundControlIntervalId);
-                            clearInterval(playBakcRateIntervalId);
+                            clearInterval(this.playBakcRateIntervalId);
+                            clearInterval(this.bordersReboundControlIntervalId);
                             this.diceTurnAnimation?.pause();
                             this.diceMoveAnimation?.pause();
                         }
                     }
                 }
-
                 const stopControlIntervalId = setInterval(() => {
                     stopControl();
-                }, 1)
-                    
+                }, 10)
+            }
+
+            private playBackRateUpdateInit = () => {
+                this.playBakcRateIntervalId = setInterval(() => {
+                    this.playBackRateUpdate();
+                }, 10);
+            }
+
+            private bordersReboundcontrolInit = () => {
+                                                    
+                let next = true;
+
                 let reboundSide: SideRebound = null;
                 const reboundControl = () => {
                     
@@ -222,6 +229,8 @@ function Home() {
                     }
 
                     if (reboundSide) {
+                        next = false;
+
                         const impactPosition = { x: this.getPosition().x, y: this.getPosition().y };
                         const impactCurrentYRotation = this.getCurrentYRotation();
 
@@ -254,12 +263,13 @@ function Home() {
                                 this.isReboundBottom = true;
                             }
                         }
+
+                        next = true;
                     }
-                    
                 }
 
-                const bordersReboundControlIntervalId = setInterval(() => {
-                    reboundControl();                    
+                this.bordersReboundControlIntervalId = setInterval(() => {
+                    if (next) reboundControl();                    
                 }, 1);
             }
            
@@ -307,7 +317,9 @@ function Home() {
                             this.oneTurnDuration = ((4 * this.diceSize) / Vi);
                             this.setdiceTurnAnimation(this.getCurrentYRotation());
                             this.setdiceMoveAnimation(Vxi, Vyi);
-                            this.bordersReboundcontrolInit(); 
+                            this.bordersReboundcontrolInit();
+                            this.stopControlInit(); 
+                            this.playBackRateUpdateInit();
                         }
                         isMouseDown = false;
                     }
