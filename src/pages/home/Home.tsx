@@ -453,9 +453,9 @@ function Home() {
                     const dice1newVx = dice0Vx * 0.9 + dice1Vx * 0.1;
                     const dice1newVy = dice0Vy * 0.9 + dice1Vy * 0.1;
                                         
-                    const dice0newV = Math.sqrt((dice0newVx ** 2) + (dice0newVy ** 2));
-                    const dice1newV = Math.sqrt((dice1newVx ** 2) + (dice1newVy ** 2));
-
+                    let dice0newV = Math.sqrt((dice0newVx ** 2) + (dice0newVy ** 2));
+                    let dice1newV = Math.sqrt((dice1newVx ** 2) + (dice1newVy ** 2));
+       
                     dice0.oneTurnDuration = (4 * dice0.diceSize) / dice0newV;
                     dice1.oneTurnDuration = (4 * dice1.diceSize) / dice1newV;
 
@@ -490,7 +490,10 @@ function Home() {
                     dice1.stopControlInit(); 
                     dice1.playBackRateUpdateInit();
 
-                    // waitCollision = false;
+                    waitCollision = false;
+                    setTimeout(() => {
+                        waitCollision = true;
+                    }, 50);
                 }
                 requestAnimationFrame(impactController);
             }
