@@ -220,7 +220,8 @@ function Home() {
 
                 let reboundSide: SideRebound = null;
                 const reboundControl = () => {
-                    
+                    next = false;
+
                     if (this.getSideDistance.left() <= 0 && !this.isReboundLeft) {
                         reboundSide = "left"
                     } else if (this.getSideDistance.right() <= 0 && !this.isReboundRight) {
@@ -234,8 +235,7 @@ function Home() {
                     }
 
                     if (reboundSide) {
-                        next = false;
-
+                        
                         const impactPosition = { x: this.getPosition().x, y: this.getPosition().y };
                         const impactCurrentYRotation = this.getCurrentYRotation();
 
@@ -268,9 +268,8 @@ function Home() {
                                 this.isReboundBottom = true;
                             }
                         }
-
-                        next = true;
                     }
+                    next = true;
                 }
 
                 this.bordersReboundControlIntervalId = setInterval(() => {
