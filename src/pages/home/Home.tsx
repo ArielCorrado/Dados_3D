@@ -46,8 +46,8 @@ function Home() {
             private dice: HTMLDivElement | null = null;
             private diceTurnAnimateCont: HTMLDivElement | null = null;
             private diceSideExternals: NodeListOf<Element> | undefined = undefined;
-            private diceMoveAnimation: Animation | undefined = undefined;
-            private diceTurnAnimation: Animation | undefined = undefined;
+            diceMoveAnimation: Animation | undefined = undefined;
+            diceTurnAnimation: Animation | undefined = undefined;
 
             private getDomElements = () => {
                 const dice: HTMLDivElement | null = document.querySelector(`.dice${this.number}`);
@@ -72,8 +72,7 @@ function Home() {
             private isReboundTop = false;
             private isReboundBottom = false;
             private playBakcRateIntervalId: NodeJS.Timer | undefined = undefined;
-            private bordersReboundControlIntervalId: NodeJS.Timer | undefined = undefined;
-                                                        
+                                                                    
             setVelocityVector = (x: number, y: number) => {
                 this.velocityVector.x = x;
                 this.velocityVector.y = y;
@@ -90,6 +89,7 @@ function Home() {
                     this.diceTurnAnimation.playbackRate = this.decelerationFunc(t);
                     this.diceMoveAnimation.playbackRate = this.decelerationFunc(t);
                 }
+                requestAnimationFrame(this.playBackRateUpdate)
             }    
 
             getVelocityVector = () => {
@@ -165,7 +165,6 @@ function Home() {
             }
 
             private setdiceMoveAnimation = (Vx: number, Vy: number) => {      /* Animacion de translacion del dado */
-
                 const timeLeft = this.motionDuration;
                 const reboundAx = Vx * timeLeft;
                 const reboundAy = Vy * timeLeft;
@@ -183,33 +182,25 @@ function Home() {
             }
 
             private stopControlInit = () => {
-                let next = true;
                 const stopControl = () => {
-                    next = false;
                     if (this.getVelocity() < this.stopVelocity) {
                         const actualYrotation = this.getCurrentYRotation();
                         if (
                             (Math.abs(actualYrotation) % 90 <= this.stopDegreesTolerance) ||
                             (Math.abs(actualYrotation) < 90 && Math.abs(actualYrotation) >= (90 - this.stopDegreesTolerance)) //Incluimos angulos menores y cercanos a 90º como 85º que  no son "detectados" por el algoritmo con "%"
                         ) {
-                            clearInterval(stopControlIntervalId);
                             clearInterval(this.playBakcRateIntervalId);
-                            clearInterval(this.bordersReboundControlIntervalId);
                             this.diceTurnAnimation?.pause();
                             this.diceMoveAnimation?.pause();
                         }
                     }
-                    next = true
+                    requestAnimationFrame(stopControl);
                 }
-                const stopControlIntervalId = setInterval(() => {
-                    if(next) stopControl();
-                }, 10)
+                requestAnimationFrame(stopControl);
             }
 
             private playBackRateUpdateInit = () => {
-                this.playBakcRateIntervalId = setInterval(() => {
-                    this.playBackRateUpdate();
-                }, 10);
+                requestAnimationFrame(this.playBackRateUpdate);
             }
 
             private bordersReboundcontrolInit = () => {
@@ -218,13 +209,10 @@ function Home() {
                 this.isReboundRight = false;
                 this.isReboundTop = false;
                 this.isReboundBottom = false;
-                                                    
-                let next = true;
-
+                              
                 let reboundSide: SideRebound = null;
                 const reboundControl = () => {
-                    next = false;
-
+                    
                     if (this.getSideDistance.left() <= 0 && !this.isReboundLeft) {
                         reboundSide = "left"
                     } else if (this.getSideDistance.right() <= 0 && !this.isReboundRight) {
@@ -272,12 +260,9 @@ function Home() {
                             }
                         }
                     }
-                    next = true;
+                    requestAnimationFrame(reboundControl);  
                 }
-
-                this.bordersReboundControlIntervalId = setInterval(() => {
-                    if (next) reboundControl();                    
-                }, 1);
+                requestAnimationFrame(reboundControl);                
             }
            
             place = () => {
@@ -408,15 +393,15 @@ function Home() {
 
             const impactController = () => {
                 if (getDistance() <= 0) {
-                    document.body.getAnimations({subtree: true}).forEach((animation) => {
-                        animation.pause();
-                    })
+                    dice0.diceMoveAnimation?.pause();
+                    dice0.diceTurnAnimation?.pause();
+                    dice1.diceMoveAnimation?.pause();
+                    dice1.diceTurnAnimation?.pause();
                 }
+                requestAnimationFrame(impactController);
             }
 
-            setInterval(() =>{
-                impactController();
-            },1)
+           requestAnimationFrame(impactController);
         }
 
         const dice0 = new Dice(0, 200, 500);
