@@ -12,10 +12,11 @@ function Home() {
         type SideRebound = "left" | "right" | "top" | "bottom" | null;
         class Dice {
 
-            constructor(public number: number, public xPos: number, public yPos: number) {
+            constructor(public number: number, public xPos: number, public yPos: number, public color: string) {
                 this.number = number;
                 this.xPos = xPos;
                 this.yPos = yPos;
+                this.color = color;
 
                 this.jsx = <div className={`dice dice${this.number} flex`} key={this.number}>
                     <div className={`diceTurnAnimateCont diceTurnAnimateCont${this.number} diceTurned`}>
@@ -46,6 +47,7 @@ function Home() {
             private dice: HTMLDivElement | null = null;
             private diceTurnAnimateCont: HTMLDivElement | null = null;
             private diceSideExternals: NodeListOf<Element> | undefined = undefined;
+            private diceSides: NodeListOf<HTMLDivElement> | undefined = undefined;
             diceMoveAnimation: Animation | undefined = undefined;
             diceTurnAnimation: Animation | undefined = undefined;
 
@@ -53,18 +55,20 @@ function Home() {
                 const dice: HTMLDivElement | null = document.querySelector(`.dice${this.number}`);
                 const diceTurnAnimateCont: HTMLDivElement | null = document.querySelector(`.diceTurnAnimateCont${this.number}`);
                 const diceSideExternals = dice?.querySelectorAll(".diceSideExternal");
+                const diceSides: NodeListOf<HTMLDivElement> |  undefined = dice?.querySelectorAll(".diceSide")
                 this.dice = dice;
                 this.diceTurnAnimateCont = diceTurnAnimateCont;
                 this.diceSideExternals = diceSideExternals;
+                this.diceSides = diceSides;
             }
 
-            private stopVelocity = 0.6;
-            private celeration = - 0.0015;
+            stopVelocity = 0.6;
+            celeration = - 0.0015;
             private Vmax = 4;
             private stopDegreesTolerance = 5;
             private velocityVector = { x: 0, y: 0 };
             private decelerationFuncMin = this.stopVelocity / this.Vmax;
-            private motionDuration = 0;
+            motionDuration = 0;
             oneTurnDuration = 0;
             ti = 0;
             private isReboundLeft = false;
@@ -269,6 +273,9 @@ function Home() {
                 this.getDomElements();
                 this.dice!.style.left = `${this.xPos - (this.diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
                 this.dice!.style.top = `${this.yPos - (this.diceSize / 2)}px`;
+                // this.diceSides?.forEach((side) => {
+                //     side.style.backgroundColor = this.color;
+                // })
                                
                 let isMouseDown = false;
                 let isMouseOver = false;
@@ -372,8 +379,8 @@ function Home() {
             const getCollisionAngle = () => {
                 const xDistance = dice0.getPosition().x - dice1.getPosition().x;
                 const yDistance = dice0.getPosition().y - dice1.getPosition().y;
-                // return (Math.atan2(yDistance, xDistance) / Math.PI) * 180;
-                return Math.atan2(yDistance, xDistance);
+                return -(Math.atan2(yDistance, xDistance) / Math.PI) * 180;
+                // return -Math.atan2(yDistance, xDistance);
             }
 
             const getCentersDistance = () => {
@@ -424,8 +431,10 @@ function Home() {
                 return xDistance <= 0 && yDistance <= 0 && getCentersDistance() <= dice0.diceSize * 1.25 ? true : false;
             }
 
+            let waitCollision = true;
             const impactController = () => {
-                if (isCollision()) {
+
+                if (isCollision() && waitCollision) {
                                         
                     dice0.diceMoveAnimation?.pause();
                     dice1.diceMoveAnimation?.pause();
@@ -446,11 +455,14 @@ function Home() {
                     const dice1Vx = dice1.getVelocityVector().x;
                     const dice1Vy = dice1.getVelocityVector().y;
 
-                    const dice0newVx = dice0Vx * Math.cos(getCollisionAngle()) + dice1Vx * Math.sin(getCollisionAngle());
-                    const dice0newVy = dice0Vy * Math.cos(getCollisionAngle()) + dice1Vy * Math.sin(getCollisionAngle());
-                    const dice1newVx = dice0Vx * Math.sin(getCollisionAngle()) + dice1Vx * Math.cos(getCollisionAngle());
-                    const dice1newVy = dice0Vy * Math.sin(getCollisionAngle()) + dice1Vy * Math.cos(getCollisionAngle());
+                    const collisionAngle = getCollisionAngle();
+                    console.log(collisionAngle);
 
+                    const dice0newVx = (dice0Vx * Math.cos(collisionAngle)) + (dice1Vx * Math.sin(collisionAngle));
+                    const dice0newVy = (dice0Vy * Math.cos(collisionAngle)) + (dice1Vy * Math.sin(collisionAngle));
+                    const dice1newVx = (dice0Vx * Math.sin(collisionAngle)) + (dice1Vx * Math.cos(collisionAngle));
+                    const dice1newVy = (dice0Vy * Math.sin(collisionAngle)) + (dice1Vy * Math.cos(collisionAngle));
+                                        
                     const dice0newV = Math.sqrt((dice0newVx ** 2) + (dice0newVy ** 2));
                     const dice1newV = Math.sqrt((dice1newVx ** 2) + (dice1newVy ** 2));
 
@@ -472,6 +484,9 @@ function Home() {
                     dice0.setVelocityVector(dice0newVx, dice0newVy);
                     dice1.setVelocityVector(dice1newVx, dice1newVy);
 
+                    dice0.motionDuration = Math.abs((dice0.stopVelocity - dice0newV) / (dice0.celeration)); 
+                    dice1.motionDuration = Math.abs((dice1.stopVelocity - dice1newV) / (dice1.celeration));
+
                     dice0.setdiceMoveAnimation(dice0newVx, dice0newVy);
                     dice1.setdiceMoveAnimation(dice1newVx, dice1newVy);
 
@@ -485,6 +500,8 @@ function Home() {
                     dice1.bordersReboundcontrolInit();
                     dice1.stopControlInit(); 
                     dice1.playBackRateUpdateInit();
+
+                    waitCollision = false;
                 }
                 requestAnimationFrame(impactController);
             }
@@ -492,8 +509,8 @@ function Home() {
            requestAnimationFrame(impactController);
         }
 
-        const dice0 = new Dice(0, 960, 500);
-        const dice1 = new Dice(1, 1500, 500);
+        const dice0 = new Dice(0, 960, 500, "#e9759c");
+        const dice1 = new Dice(1, 1500, 500, "blue");
 
         setDices([dice0.jsx, dice1.jsx]);
 
