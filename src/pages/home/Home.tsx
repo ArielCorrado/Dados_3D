@@ -56,6 +56,13 @@ function Home() {
                 this.diceTurnAnimateCont = diceTurnAnimateCont;
                 this.diceSideExternals = diceSideExternals;
             }
+
+            private velocityVector = { x: 0, y: 0 };
+
+            setVelocityVector = (x: number, y: number) => {
+                this.velocityVector.x = x;
+                this.velocityVector.y = y;
+            }
             
             getPosition = () => {
                 const diceRect = this.dice?.getBoundingClientRect();
@@ -90,8 +97,10 @@ function Home() {
                 let isMouseDown = false;
                 let isMouseOver = false;
                 const motionLog: { x: number, y: number, t: number }[] = new Array(5);
-                const velocityVector = { x: 0, y: 0 };
-
+                for (let i = 0; i < 5; i++) {
+                    motionLog[i] = { x: 0, y: 0, t: 0 };
+                }
+                
                 const pointerup = () => {                                                                      //Se entra a esta funcion al soltar el dado
                     if (isMouseOver) {                                                                         // y si el cursor esta sobre el
                         if (motionLog[4].x - motionLog[0].x !== 0 || motionLog[4].y - motionLog[0].y !== 0) {  //Verificamos que hayamos movido el dado (al menos en x o en y) para poder arrojarlo
@@ -100,26 +109,21 @@ function Home() {
                             this.dice?.getAnimations({ subtree: true }).forEach(animation => {
                                 animation.cancel();
                             })
-                            
-                            const setVelocityVector = (x: number, y: number) => {
-                                velocityVector.x = x;
-                                velocityVector.y = y;
-                            }
-
+                                                        
                             const Axi = motionLog[4].x - motionLog[0].x;
                             const Ayi = motionLog[4].y - motionLog[0].y;
                             const At = motionLog[4].t - motionLog[0].t;
                             let Vxi = Axi / At;        // px/ms
                             let Vyi = Ayi / At;        // px/ms
                             const shootingAngle = (Math.atan2(-Ayi, Axi) / Math.PI) * 180;
-                            setVelocityVector(Vxi, Vyi);
-                            let Vi = Math.sqrt((velocityVector.x ** 2) + (velocityVector.y ** 2));
+                            this.setVelocityVector(Vxi, Vyi);
+                            let Vi = Math.sqrt((this.velocityVector.x ** 2) + (this.velocityVector.y ** 2));
 
                             if (Vi > Vmax) {
-                                velocityVector.x = Vmax * Math.cos((shootingAngle / 180) * Math.PI);
-                                velocityVector.y = - Vmax * Math.sin((shootingAngle / 180) * Math.PI);
-                                Vxi = velocityVector.x;
-                                Vyi = velocityVector.y;
+                                this.velocityVector.x = Vmax * Math.cos((shootingAngle / 180) * Math.PI);
+                                this.velocityVector.y = - Vmax * Math.sin((shootingAngle / 180) * Math.PI);
+                                Vxi = this.velocityVector.x;
+                                Vyi = this.velocityVector.y;
                                 Vi = Vmax;
                             }                    
                           
@@ -159,8 +163,8 @@ function Home() {
 
                             const getVelocityVector = () => {
                                 const t = Date.now() - ti;
-                                const Vx = velocityVector.x * decelerationFunc(t);
-                                const Vy = velocityVector.y * decelerationFunc(t);
+                                const Vx = this.velocityVector.x * decelerationFunc(t);
+                                const Vy = this.velocityVector.y * decelerationFunc(t);
                                 return { x: Vx, y: Vy };
                             }
                             
@@ -194,7 +198,7 @@ function Home() {
                             }
 
                             const setdiceTurnAnimation2 = (currentYRotation: number) => {       /* Animacion de rotacion del dado */
-                                const reboundDirectionVector = { x: velocityVector.x, y: velocityVector.y };
+                                const reboundDirectionVector = { x: this.velocityVector.x, y: this.velocityVector.y };
                                 const reboundgAngle = Math.floor(Math.atan2(reboundDirectionVector.y, reboundDirectionVector.x) * 180 / Math.PI);     //Angulo de tiro
                                 this.diceTurnAnimation = this.diceTurnAnimateCont?.animate([
                                     // keyframes
@@ -265,11 +269,11 @@ function Home() {
                                    
                                     if (reboundSide === "left" || reboundSide === "right") {
                                         this.setPosition(impactPosition.x, impactPosition.y);
-                                        setVelocityVector(-velocityVector.x, velocityVector.y);
+                                        this.setVelocityVector(-this.velocityVector.x, this.velocityVector.y);
                                         this.diceTurnAnimation?.cancel();
                                         this.diceMoveAnimation?.cancel();
                                         setdiceTurnAnimation2(impactCurrentYRotation);
-                                        setdiceMoveAnimation(velocityVector.x, velocityVector.y);
+                                        setdiceMoveAnimation(this.velocityVector.x, this.velocityVector.y);
                                         if (reboundSide === "left") {
                                             isReboundRight = false;
                                             isReboundLeft = true;
@@ -279,11 +283,11 @@ function Home() {
                                         }
                                     } else if (reboundSide === "top" || reboundSide === "bottom") {
                                         this.setPosition(impactPosition.x, impactPosition.y);
-                                        setVelocityVector(velocityVector.x, -velocityVector.y);
+                                        this.setVelocityVector(this.velocityVector.x, -this.velocityVector.y);
                                         this.diceTurnAnimation?.cancel();
                                         this.diceMoveAnimation?.cancel();
                                         setdiceTurnAnimation2(impactCurrentYRotation);
-                                        setdiceMoveAnimation(velocityVector.x, velocityVector.y);
+                                        setdiceMoveAnimation(this.velocityVector.x, this.velocityVector.y);
                                         if (reboundSide === "top") {
                                             isReboundTop = true;
                                             isReboundBottom = false;
