@@ -79,23 +79,19 @@ function Home() {
            
             init = () => {
                 this.getDomElements();
-                
-                let isMouseDown = false;
-                let isMouseOver = false;
-                
-                const motionLog: { x: number, y: number, t: number }[] = new Array(5);
-                for (let i = 0; i < motionLog.length; i++) {
-                    motionLog[i] = { x: 0, y: 0, t: 0 };
-                }
-                                
                 this.dice!.style.left = `${this.xPos - (this.diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
                 this.dice!.style.top = `${this.yPos - (this.diceSize / 2)}px`;
-
+                                
                 const stopVelocity = 0.6;
                 const aceleration = - 0.0025;
                 const Vmax = 5;
                 const stopDegreesTolerance = 5;
-              
+                
+                let isMouseDown = false;
+                let isMouseOver = false;
+                const motionLog: { x: number, y: number, t: number }[] = new Array(5);
+                const velocityVector = { x: 0, y: 0 };
+
                 const pointerup = () => {                                                                      //Se entra a esta funcion al soltar el dado
                     if (isMouseOver) {                                                                         // y si el cursor esta sobre el
                         if (motionLog[4].x - motionLog[0].x !== 0 || motionLog[4].y - motionLog[0].y !== 0) {  //Verificamos que hayamos movido el dado (al menos en x o en y) para poder arrojarlo
@@ -104,8 +100,7 @@ function Home() {
                             this.dice?.getAnimations({ subtree: true }).forEach(animation => {
                                 animation.cancel();
                             })
-
-                            const velocityVector = { x: 0, y: 0 };
+                            
                             const setVelocityVector = (x: number, y: number) => {
                                 velocityVector.x = x;
                                 velocityVector.y = y;
@@ -138,10 +133,8 @@ function Home() {
                                         (Math.abs(actualYrotation) % 90 <= stopDegreesTolerance) ||
                                         (Math.abs(actualYrotation) < 90 && Math.abs(actualYrotation) >= (90 - stopDegreesTolerance)) //Incluimos angulos menores y cercanos a 90º como 85º que  no son "detectados" por el algoritmo con "%"
                                     ) {
-                                        // setTimeout(() => {
-                                            clearInterval(controlIntervalId);
-                                            clearInterval(playBakcRateIntervalId);
-                                        // }, 100);
+                                        clearInterval(controlIntervalId);
+                                        clearInterval(playBakcRateIntervalId);
                                         this.diceTurnAnimation?.pause();
                                         this.diceMoveAnimation?.pause();
                                     }
@@ -153,7 +146,7 @@ function Home() {
                             const decelerationFuncMin = stopVelocity / Vmax;
                             const decelerationFunc = (t: number): number => {                              
                                 const result = ((- 1 / motionDuration) * t) + 1;
-                                return result > decelerationFuncMin ? result : decelerationFuncMin * 0.9;
+                                return result > decelerationFuncMin ? result : decelerationFuncMin * 0.8;
                             }
                                   
                             const playBackRateUpdate = () => {
