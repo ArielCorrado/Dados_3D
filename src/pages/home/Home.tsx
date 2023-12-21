@@ -121,7 +121,7 @@ function Home() {
                 return rotateYAngle; // Return the Y rotation angle in degrees
             }
 
-            private getSideDistance = {           /* Calcula la distancia del dado a un determinado borde de la ventana visual (window) */
+            readonly getSideDistance = {           /* Calcula la distancia del dado a un determinado borde de la ventana visual (window) */
                 left: () => {
                     const sides = this.diceSideExternals;
                     const sidesArr = Array.from(sides!)
@@ -386,13 +386,28 @@ function Home() {
         const register = (dice0: Dice, dice1: Dice) => {
 
             const getDistance = (): number => {
-                const xDistance = Math.abs(dice0.getPosition().x - dice1.getPosition().x);
-                const yDistance = Math.abs(dice0.getPosition().y - dice1.getPosition().y);
-                return Math.sqrt((xDistance ** 2) + (yDistance ** 2));
+                const dice0Left = dice0.getSideDistance.left();
+                const dice0Right = dice0.getSideDistance.right();
+                const dice0Width = window.innerWidth - dice0Left - dice0Right;
+                const dice0limitLeft = dice0Left;
+                const dice0limitRight = dice0limitLeft + dice0Width;
+
+                const dice1Left = dice1.getSideDistance.left();
+                const dice1Right = dice1.getSideDistance.right();
+                const dice1Width = window.innerWidth - dice1Left - dice1Right;
+                const dice1limitLeft = dice1Left;
+                const dice1limitRight = dice1limitLeft + dice1Width;
+
+                if (dice0limitRight < dice1limitLeft) {
+                    return dice1limitLeft - dice0limitRight
+                } else if (dice0limitLeft > dice1limitRight) {
+                    return dice0limitLeft - dice1limitRight
+                }
+                return 0
             }
 
             const impactController = () => {
-                if (getDistance() <= dice0.diceSize) {
+                if (getDistance() <= 0) {
                     document.body.getAnimations({subtree: true}).forEach((animation) => {
                         animation.pause();
                     })
