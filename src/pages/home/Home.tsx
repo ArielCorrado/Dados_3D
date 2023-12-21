@@ -65,8 +65,8 @@ function Home() {
             private velocityVector = { x: 0, y: 0 };
             private decelerationFuncMin = this.stopVelocity / this.Vmax;
             private motionDuration = 0;
-            private oneTurnDuration = 0;
-            private ti = 0;
+            oneTurnDuration = 0;
+            ti = 0;
             private isReboundLeft = false;
             private isReboundRight = false;
             private isReboundTop = false;
@@ -148,7 +148,7 @@ function Home() {
                 }
             }
 
-            private setdiceTurnAnimation = (currentYRotation: number) => {       /* Animacion de rotacion del dado */
+            setdiceTurnAnimation = (currentYRotation: number) => {       /* Animacion de rotacion del dado */
                 const reboundDirectionVector = { x: this.velocityVector.x, y: this.velocityVector.y };
                 const reboundgAngle = Math.floor(Math.atan2(reboundDirectionVector.y, reboundDirectionVector.x) * 180 / Math.PI);     //Angulo de tiro
                 this.diceTurnAnimation = this.diceTurnAnimateCont?.animate([
@@ -164,7 +164,7 @@ function Home() {
                 });
             }
 
-            private setdiceMoveAnimation = (Vx: number, Vy: number) => {      /* Animacion de translacion del dado */
+            setdiceMoveAnimation = (Vx: number, Vy: number) => {      /* Animacion de translacion del dado */
                 const timeLeft = this.motionDuration;
                 const reboundAx = Vx * timeLeft;
                 const reboundAy = Vy * timeLeft;
@@ -181,7 +181,7 @@ function Home() {
                 });
             }
 
-            private stopControlInit = () => {
+            stopControlInit = () => {
                 const stopControl = () => {
                     if (this.getVelocity() < this.stopVelocity) {
                         const actualYrotation = this.getCurrentYRotation();
@@ -199,11 +199,11 @@ function Home() {
                 requestAnimationFrame(stopControl);
             }
 
-            private playBackRateUpdateInit = () => {
+            playBackRateUpdateInit = () => {
                 requestAnimationFrame(this.playBackRateUpdate);
             }
 
-            private bordersReboundcontrolInit = () => {
+            bordersReboundcontrolInit = () => {
 
                 this.isReboundLeft = false;
                 this.isReboundRight = false;
@@ -306,7 +306,6 @@ function Home() {
                             this.motionDuration = Math.abs((this.stopVelocity - Vi) / (this.celeration));                                             //La duracion del movimiento del dato hasta que se queda quieto es proporcional a la velocidad de tiro
                             this.oneTurnDuration = (4 * this.diceSize) / Vi;
                             this.ti = Date.now();
-                            this.oneTurnDuration = ((4 * this.diceSize) / Vi);
                             this.setdiceTurnAnimation(this.getCurrentYRotation());
                             this.setdiceMoveAnimation(Vxi, Vyi);
                             this.bordersReboundcontrolInit();
@@ -370,6 +369,13 @@ function Home() {
 
         const register = (dice0: Dice, dice1: Dice) => {
 
+            const getCollisionAngle = () => {
+                const xDistance = dice0.getPosition().x - dice1.getPosition().x;
+                const yDistance = dice0.getPosition().y - dice1.getPosition().y;
+                // return (Math.atan2(yDistance, xDistance) / Math.PI) * 180;
+                return Math.atan2(yDistance, xDistance);
+            }
+
             const getCentersDistance = () => {
                 const xDistance = Math.abs(dice0.getPosition().x - dice1.getPosition().x);
                 const yDistance = Math.abs(dice0.getPosition().y - dice1.getPosition().y);
@@ -420,10 +426,65 @@ function Home() {
 
             const impactController = () => {
                 if (isCollision()) {
+                                        
                     dice0.diceMoveAnimation?.pause();
                     dice1.diceMoveAnimation?.pause();
                     dice0.diceTurnAnimation?.pause();
                     dice1.diceTurnAnimation?.pause();
+
+                    dice0.ti = Date.now();
+                    dice1.ti = Date.now();
+
+                    const dice0Pos = dice0.getPosition();
+                    const dice1Pos = dice1.getPosition();
+
+                    const dice0CurrentYRotation = dice0.getCurrentYRotation();
+                    const dice1CurrentYRotation = dice1.getCurrentYRotation();       
+                                                                
+                    const dice0Vx = dice0.getVelocityVector().x;
+                    const dice0Vy = dice0.getVelocityVector().y;
+                    const dice1Vx = dice1.getVelocityVector().x;
+                    const dice1Vy = dice1.getVelocityVector().y;
+
+                    const dice0newVx = dice0Vx * Math.cos(getCollisionAngle()) + dice1Vx * Math.sin(getCollisionAngle());
+                    const dice0newVy = dice0Vy * Math.cos(getCollisionAngle()) + dice1Vy * Math.sin(getCollisionAngle());
+                    const dice1newVx = dice0Vx * Math.sin(getCollisionAngle()) + dice1Vx * Math.cos(getCollisionAngle());
+                    const dice1newVy = dice0Vy * Math.sin(getCollisionAngle()) + dice1Vy * Math.cos(getCollisionAngle());
+
+                    const dice0newV = Math.sqrt((dice0newVx ** 2) + (dice0newVy ** 2));
+                    const dice1newV = Math.sqrt((dice1newVx ** 2) + (dice1newVy ** 2));
+
+                    dice0.oneTurnDuration = (4 * dice0.diceSize) / dice0newV;
+                    dice1.oneTurnDuration = (4 * dice1.diceSize) / dice1newV;
+
+                    // dice0.diceMoveAnimation?.cancel();
+                    // dice1.diceMoveAnimation?.cancel();
+                    // dice0.diceTurnAnimation?.cancel();
+                    // dice1.diceTurnAnimation?.cancel();
+
+                    document.body.getAnimations({subtree: true}).forEach((animation) => {
+                        animation.cancel();
+                    })
+
+                    dice0.setPosition(dice0Pos.x, dice0Pos.y);
+                    dice1.setPosition(dice1Pos.x, dice1Pos.y);
+
+                    dice0.setVelocityVector(dice0newVx, dice0newVy);
+                    dice1.setVelocityVector(dice1newVx, dice1newVy);
+
+                    dice0.setdiceMoveAnimation(dice0newVx, dice0newVy);
+                    dice1.setdiceMoveAnimation(dice1newVx, dice1newVy);
+
+                    dice0.setdiceTurnAnimation(dice0CurrentYRotation);
+                    dice1.setdiceTurnAnimation(dice1CurrentYRotation);
+
+                    dice0.bordersReboundcontrolInit();
+                    dice0.stopControlInit(); 
+                    dice0.playBackRateUpdateInit();
+
+                    dice1.bordersReboundcontrolInit();
+                    dice1.stopControlInit(); 
+                    dice1.playBackRateUpdateInit();
                 }
                 requestAnimationFrame(impactController);
             }
