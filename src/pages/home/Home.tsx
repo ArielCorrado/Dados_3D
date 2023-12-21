@@ -75,8 +75,7 @@ function Home() {
             private isReboundRight = false;
             private isReboundTop = false;
             private isReboundBottom = false;
-            private playBakcRateIntervalId: NodeJS.Timer | undefined = undefined;
-                                                                    
+                                                                                
             setVelocityVector = (x: number, y: number) => {
                 this.velocityVector.x = x;
                 this.velocityVector.y = y;
@@ -193,7 +192,6 @@ function Home() {
                             (Math.abs(actualYrotation) % 90 <= this.stopDegreesTolerance) ||
                             (Math.abs(actualYrotation) < 90 && Math.abs(actualYrotation) >= (90 - this.stopDegreesTolerance)) //Incluimos angulos menores y cercanos a 90º como 85º que  no son "detectados" por el algoritmo con "%"
                         ) {
-                            clearInterval(this.playBakcRateIntervalId);
                             this.diceTurnAnimation?.pause();
                             this.diceMoveAnimation?.pause();
                         }
@@ -428,7 +426,7 @@ function Home() {
             const impactController = () => {
 
                 if (isCollision() && waitCollision) {
-                                        
+                                                            
                     dice0.diceMoveAnimation?.pause();
                     dice1.diceMoveAnimation?.pause();
                     dice0.diceTurnAnimation?.pause();
@@ -448,25 +446,17 @@ function Home() {
                     const dice1Vx = dice1.getVelocityVector().x;
                     const dice1Vy = dice1.getVelocityVector().y;
                                         
-                    const dice0newVx = dice1Vx * 0.9 + dice0Vx * 0.1;
-                    const dice0newVy = dice1Vy * 0.9 + dice0Vy * 0.1;
-                    const dice1newVx = dice0Vx * 0.9 + dice1Vx * 0.1;
-                    const dice1newVy = dice0Vy * 0.9 + dice1Vy * 0.1;
+                    const dice0newVx = dice1Vx * 0.9 - dice0Vx * 0.1;
+                    const dice0newVy = dice1Vy * 0.9 - dice0Vy * 0.1;
+                    const dice1newVx = dice0Vx * 0.9 - dice1Vx * 0.1;
+                    const dice1newVy = dice0Vy * 0.9 - dice1Vy * 0.1;
                                         
                     let dice0newV = Math.sqrt((dice0newVx ** 2) + (dice0newVy ** 2));
                     let dice1newV = Math.sqrt((dice1newVx ** 2) + (dice1newVy ** 2));
        
                     dice0.oneTurnDuration = (4 * dice0.diceSize) / dice0newV;
                     dice1.oneTurnDuration = (4 * dice1.diceSize) / dice1newV;
-
-                    dice0.diceMoveAnimation?.cancel();
-                    dice1.diceMoveAnimation?.cancel();
-                    dice0.diceTurnAnimation?.cancel();
-                    dice1.diceTurnAnimation?.cancel();
-                    document.body.getAnimations({subtree: true}).forEach((animation) => {
-                        animation.cancel();
-                    })
-
+                
                     dice0.setPosition(dice0Pos.x, dice0Pos.y);
                     dice1.setPosition(dice1Pos.x, dice1Pos.y);
 
@@ -475,6 +465,14 @@ function Home() {
 
                     dice0.motionDuration = Math.abs((dice0.stopVelocity - dice0newV) / (dice0.celeration)); 
                     dice1.motionDuration = Math.abs((dice1.stopVelocity - dice1newV) / (dice1.celeration));
+
+                    dice0.diceMoveAnimation?.cancel();
+                    dice1.diceMoveAnimation?.cancel();
+                    dice0.diceTurnAnimation?.cancel();
+                    dice1.diceTurnAnimation?.cancel();
+                    document.body.getAnimations({subtree: true}).forEach((animation) => {
+                        animation.cancel();
+                    })
 
                     dice0.setdiceMoveAnimation(dice0newVx, dice0newVy);
                     dice1.setdiceMoveAnimation(dice1newVx, dice1newVy);
