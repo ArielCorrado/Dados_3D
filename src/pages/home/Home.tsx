@@ -375,14 +375,7 @@ function Home() {
         }
 
         const register = (dice0: Dice, dice1: Dice) => {
-
-            const getCollisionAngle = () => {
-                const xDistance = dice0.getPosition().x - dice1.getPosition().x;
-                const yDistance = dice0.getPosition().y - dice1.getPosition().y;
-                // return -(Math.atan2(yDistance, xDistance) / Math.PI) * 180;
-                return -Math.atan2(yDistance, xDistance);
-            }
-          
+                   
             const getCentersDistance = () => {
                 const xDistance = Math.abs(dice0.getPosition().x - dice1.getPosition().x);
                 const yDistance = Math.abs(dice0.getPosition().y - dice1.getPosition().y);
@@ -454,14 +447,11 @@ function Home() {
                     const dice0Vy = dice0.getVelocityVector().y;
                     const dice1Vx = dice1.getVelocityVector().x;
                     const dice1Vy = dice1.getVelocityVector().y;
-
-                    const collisionAngle = getCollisionAngle();
-                    console.log(collisionAngle);
-
-                    const dice0newVx = (dice0Vx * Math.cos(collisionAngle)) + (dice1Vx * Math.sin(collisionAngle));
-                    const dice0newVy = (dice0Vy * Math.cos(collisionAngle)) + (dice1Vy * Math.sin(collisionAngle));
-                    const dice1newVx = (dice0Vx * Math.sin(collisionAngle)) + (dice1Vx * Math.cos(collisionAngle));
-                    const dice1newVy = (dice0Vy * Math.sin(collisionAngle)) + (dice1Vy * Math.cos(collisionAngle));
+                                        
+                    const dice0newVx = dice1Vx * 0.9 + dice0Vx * 0.1;
+                    const dice0newVy = dice1Vy * 0.9 + dice0Vy * 0.1;
+                    const dice1newVx = dice0Vx * 0.9 + dice1Vx * 0.1;
+                    const dice1newVy = dice0Vy * 0.9 + dice1Vy * 0.1;
                                         
                     const dice0newV = Math.sqrt((dice0newVx ** 2) + (dice0newVy ** 2));
                     const dice1newV = Math.sqrt((dice1newVx ** 2) + (dice1newVy ** 2));
@@ -469,11 +459,10 @@ function Home() {
                     dice0.oneTurnDuration = (4 * dice0.diceSize) / dice0newV;
                     dice1.oneTurnDuration = (4 * dice1.diceSize) / dice1newV;
 
-                    // dice0.diceMoveAnimation?.cancel();
-                    // dice1.diceMoveAnimation?.cancel();
-                    // dice0.diceTurnAnimation?.cancel();
-                    // dice1.diceTurnAnimation?.cancel();
-
+                    dice0.diceMoveAnimation?.cancel();
+                    dice1.diceMoveAnimation?.cancel();
+                    dice0.diceTurnAnimation?.cancel();
+                    dice1.diceTurnAnimation?.cancel();
                     document.body.getAnimations({subtree: true}).forEach((animation) => {
                         animation.cancel();
                     })
@@ -501,7 +490,7 @@ function Home() {
                     dice1.stopControlInit(); 
                     dice1.playBackRateUpdateInit();
 
-                    waitCollision = false;
+                    // waitCollision = false;
                 }
                 requestAnimationFrame(impactController);
             }
