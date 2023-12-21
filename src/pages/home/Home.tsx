@@ -42,7 +42,10 @@ function Home() {
             }
             
             readonly jsx: JSX.Element
-            
+
+            timeInit = true;
+            playBackRateInit = true;
+                        
             readonly diceSize: number = 100;   // El ancho del dado (en px) tiene que coincidir con el del css 
             private dice: HTMLDivElement | null = null;
             private diceTurnAnimateCont: HTMLDivElement | null = null;
@@ -194,6 +197,8 @@ function Home() {
                         ) {
                             this.diceTurnAnimation?.pause();
                             this.diceMoveAnimation?.pause();
+                            this.timeInit = true;
+                            this.playBackRateInit = true;
                         }
                     }
                     requestAnimationFrame(stopControl);
@@ -290,7 +295,10 @@ function Home() {
                             this.dice?.getAnimations({ subtree: true }).forEach(animation => {
                                 animation.cancel();
                             })
-                                                        
+
+                            this.timeInit = true;
+                            this.playBackRateInit = true;
+                                                   
                             const Axi = motionLog[4].x - motionLog[0].x;
                             const Ayi = motionLog[4].y - motionLog[0].y;
                             const At = motionLog[4].t - motionLog[0].t;
@@ -422,8 +430,6 @@ function Home() {
                 return xDistance <= 0 && yDistance <= 0 && getCentersDistance() <= dice0.diceSize * 1.25 ? true : false;
             }
 
-            let timeInit = true;
-            let playBackRateInit = true;
             let waitCollision = true;
             const impactController = () => {
 
@@ -434,10 +440,13 @@ function Home() {
                     dice0.diceTurnAnimation?.pause();
                     dice1.diceTurnAnimation?.pause();
 
-                    if(timeInit) {
+                    if(dice0.timeInit) {
                         dice0.ti = Date.now();
+                        dice0.timeInit = false;
+                    }
+                    if(dice1.timeInit) {
                         dice1.ti = Date.now();
-                        timeInit = false;
+                        dice1.timeInit = false;
                     }
 
                     const dice0Pos = dice0.getPosition();
@@ -491,10 +500,13 @@ function Home() {
                     dice1.bordersReboundcontrolInit();
                     dice1.stopControlInit(); 
                     
-                    if(playBackRateInit) {
+                    if(dice0.playBackRateInit) {
                         dice0.playBackRateUpdateInit();
+                        dice0.playBackRateInit = false;
+                    }    
+                    if(dice1.playBackRateInit) {
                         dice1.playBackRateUpdateInit();
-                        playBackRateInit = false;
+                        dice1.playBackRateInit = false;
                     }    
 
                     waitCollision = false;
