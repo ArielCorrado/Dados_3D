@@ -379,10 +379,10 @@ function Home() {
             const getCollisionAngle = () => {
                 const xDistance = dice0.getPosition().x - dice1.getPosition().x;
                 const yDistance = dice0.getPosition().y - dice1.getPosition().y;
-                return -(Math.atan2(yDistance, xDistance) / Math.PI) * 180;
-                // return -Math.atan2(yDistance, xDistance);
+                // return -(Math.atan2(yDistance, xDistance) / Math.PI) * 180;
+                return -Math.atan2(yDistance, xDistance);
             }
-
+          
             const getCentersDistance = () => {
                 const xDistance = Math.abs(dice0.getPosition().x - dice1.getPosition().x);
                 const yDistance = Math.abs(dice0.getPosition().y - dice1.getPosition().y);
