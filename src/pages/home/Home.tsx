@@ -388,7 +388,26 @@ function Home() {
                 } else if (dice0limitLeft > dice1limitRight) {
                     return dice0limitLeft - dice1limitRight
                 }
-                return 0
+                
+                const dice0Top = dice0.getSideDistance.top();
+                const dice0Bottom = dice0.getSideDistance.bottom();
+                const dice0Height = window.innerHeight - dice0Top - dice0Bottom;
+                const dice0limitTop = dice0Top;
+                const dice0limitBottom = dice0limitTop + dice0Height;
+
+                const dice1Top = dice1.getSideDistance.top();
+                const dice1Bottom = dice1.getSideDistance.bottom();
+                const dice1Height = window.innerHeight - dice1Top - dice1Bottom;
+                const dice1limitTop = dice1Top;
+                const dice1limitBottom = dice1limitTop + dice1Height;
+
+                if (dice0limitBottom < dice1limitTop) {
+                    return dice1limitTop - dice0limitBottom
+                } else if (dice0limitTop > dice1limitBottom) {
+                    return dice0limitTop - dice1limitBottom
+                }
+
+                return 0;
             }
 
             const impactController = () => {
@@ -404,8 +423,8 @@ function Home() {
            requestAnimationFrame(impactController);
         }
 
-        const dice0 = new Dice(0, 200, 500);
-        const dice1 = new Dice(1, 500, 500);
+        const dice0 = new Dice(0, 1000, 500);
+        const dice1 = new Dice(1, 960, 500);
 
         setDices([dice0.jsx, dice1.jsx]);
 
