@@ -422,6 +422,8 @@ function Home() {
                 return xDistance <= 0 && yDistance <= 0 && getCentersDistance() <= dice0.diceSize * 1.25 ? true : false;
             }
 
+            let timeInit = true;
+            let playBackRateInit = true;
             let waitCollision = true;
             const impactController = () => {
 
@@ -432,8 +434,11 @@ function Home() {
                     dice0.diceTurnAnimation?.pause();
                     dice1.diceTurnAnimation?.pause();
 
-                    dice0.ti = Date.now();
-                    dice1.ti = Date.now();
+                    if(timeInit) {
+                        dice0.ti = Date.now();
+                        dice1.ti = Date.now();
+                        timeInit = false;
+                    }
 
                     const dice0Pos = dice0.getPosition();
                     const dice1Pos = dice1.getPosition();
@@ -482,11 +487,15 @@ function Home() {
 
                     dice0.bordersReboundcontrolInit();
                     dice0.stopControlInit(); 
-                    dice0.playBackRateUpdateInit();
-
+                                        
                     dice1.bordersReboundcontrolInit();
                     dice1.stopControlInit(); 
-                    dice1.playBackRateUpdateInit();
+                    
+                    if(playBackRateInit) {
+                        dice0.playBackRateUpdateInit();
+                        dice1.playBackRateUpdateInit();
+                        playBackRateInit = false;
+                    }    
 
                     waitCollision = false;
                     setTimeout(() => {
