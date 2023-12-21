@@ -71,8 +71,7 @@ function Home() {
             private isReboundRight = false;
             private isReboundTop = false;
             private isReboundBottom = false;
-            private next = true;
-                                            
+                                                        
             setVelocityVector = (x: number, y: number) => {
                 this.velocityVector.x = x;
                 this.velocityVector.y = y;
@@ -194,18 +193,22 @@ function Home() {
                             (Math.abs(actualYrotation) % 90 <= this.stopDegreesTolerance) ||
                             (Math.abs(actualYrotation) < 90 && Math.abs(actualYrotation) >= (90 - this.stopDegreesTolerance)) //Incluimos angulos menores y cercanos a 90º como 85º que  no son "detectados" por el algoritmo con "%"
                         ) {
-                            clearInterval(controlIntervalId);
+                            clearInterval(stopControlIntervalId);
+                            clearInterval(bordersReboundControlIntervalId);
                             clearInterval(playBakcRateIntervalId);
                             this.diceTurnAnimation?.pause();
                             this.diceMoveAnimation?.pause();
                         }
                     }
                 }
+
+                const stopControlIntervalId = setInterval(() => {
+                    stopControl();
+                }, 1)
                     
                 let reboundSide: SideRebound = null;
                 const reboundControl = () => {
-                    this.next = false;
-
+                    
                     if (this.getSideDistance.left() <= 0 && !this.isReboundLeft) {
                         reboundSide = "left"
                     } else if (this.getSideDistance.right() <= 0 && !this.isReboundRight) {
@@ -252,15 +255,11 @@ function Home() {
                             }
                         }
                     }
-                    this.next = true;
+                    
                 }
 
-                const controlIntervalId = setInterval(() => {
-                    if (this.next) {
-                        reboundControl();
-                        stopControl();
-                    }
-                    // console.log(motionDuration, Date.now() - ti, getVelocity().toFixed(2))
+                const bordersReboundControlIntervalId = setInterval(() => {
+                    reboundControl();                    
                 }, 1);
             }
            
