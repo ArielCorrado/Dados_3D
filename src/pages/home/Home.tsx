@@ -61,7 +61,7 @@ function Home() {
                 this.diceSideExternals = diceSideExternals;
                 this.diceSides = diceSides;
             }
-
+            
             stopVelocity = 0.6;
             celeration = - 0.0015;
             private Vmax = 4;
@@ -130,6 +130,19 @@ function Home() {
                 return rotateYAngle; // Return the Y rotation angle in degrees
             }
 
+            getCloseAxis = (rot: number) => {
+                let currentYRotation = rot;
+                let angle_decimal = (currentYRotation / 90) % 1;
+                let angle_int = (currentYRotation / 90) - angle_decimal
+                if (Math.abs(angle_decimal) > 0.5) {
+                    angle_decimal = angle_decimal > 0 ? Math.ceil(angle_decimal) : Math.floor(angle_decimal);
+                } else {
+                    angle_decimal = angle_decimal > 0 ? Math.floor(angle_decimal) : Math.ceil(angle_decimal);
+                }
+                const closeAxis = (angle_int + angle_decimal) * 90;
+                return closeAxis;
+            }
+
             readonly getSideDistance = {           /* Calcula la distancia del dado a un determinado borde de la ventana visual (window) */
                 left: () => {
                     const sides = this.diceSideExternals;
@@ -189,14 +202,16 @@ function Home() {
                     easing: "linear"
                 });
             }
-
+           
             stopControlInit = () => {
                 const stopControl = () => {
                     if (this.getVelocity() < this.stopVelocity) {
                         const actualYrotation = this.getCurrentYRotation();
                         if (
-                            (Math.abs(actualYrotation) % 90 <= this.stopDegreesTolerance) ||
-                            (Math.abs(actualYrotation) < 90 && Math.abs(actualYrotation) >= (90 - this.stopDegreesTolerance)) //Incluimos angulos menores y cercanos a 90º como 85º que  no son "detectados" por el algoritmo con "%"
+                            (actualYrotation < this.stopDegreesTolerance && actualYrotation > -this.stopDegreesTolerance) || 
+                            (actualYrotation < (90 + this.stopDegreesTolerance) && actualYrotation > (90 - this.stopDegreesTolerance)) ||
+                            (actualYrotation < (-180 + this.stopDegreesTolerance) && actualYrotation > (180 - this.stopDegreesTolerance)) ||
+                            (actualYrotation < (-90 + this.stopDegreesTolerance) && actualYrotation > (-90 - this.stopDegreesTolerance))
                         ) {
                             this.diceTurnAnimation?.pause();
                             this.diceMoveAnimation?.pause();
@@ -428,11 +443,9 @@ function Home() {
             let allowCollisionControl = true;
             const impactController = () => {
                 
-                if (dice0.getVelocity() < dice0.stopVelocity && dice1.getVelocity() < dice1.stopVelocity) {         //Los dos dados detenidos, habilitamos el nuevo inicio de la funcion
-                    dice0.playBackRateUpdateStart = false;                                                          // "playbackrateupdate"
-                    dice1.playBackRateUpdateStart = false;
-                }
-                
+                if (dice0.getVelocity() < dice0.stopVelocity) dice0.playBackRateUpdateStart = false;        //Si el dado se detiene habilitamos el reinicio de la funcion "playBackRateUpdate"
+                if (dice1.getVelocity() < dice1.stopVelocity) dice1.playBackRateUpdateStart = false;
+                             
                 if (isCollision() && allowCollisionControl) {
                                                             
                     dice0.diceMoveAnimation?.pause();
@@ -443,9 +456,12 @@ function Home() {
                     const dice0Pos = dice0.getPosition();
                     const dice1Pos = dice1.getPosition();
 
-                    const dice0CurrentYRotation = dice0.getCurrentYRotation();
-                    const dice1CurrentYRotation = dice1.getCurrentYRotation();       
-                                                                
+                    let dice0CurrentYRotation = dice0.getCurrentYRotation();
+                    let dice1CurrentYRotation = dice1.getCurrentYRotation();       
+                    
+                    dice0CurrentYRotation = dice0.getCloseAxis(dice0CurrentYRotation);
+                    dice1CurrentYRotation = dice1.getCloseAxis(dice1CurrentYRotation);
+                                                                                                       
                     const dice0Vx = dice0.getVelocityVector().x;
                     const dice0Vy = dice0.getVelocityVector().y;
                     const dice1Vx = dice1.getVelocityVector().x;
@@ -490,10 +506,10 @@ function Home() {
 
                     dice0.bordersReboundcontrolInit();
                     dice0.stopControlInit(); 
-                                        
+                                                            
                     dice1.bordersReboundcontrolInit();
                     dice1.stopControlInit(); 
-                    
+                                        
                     if(!dice0.playBackRateUpdateStart) {
                         dice0.playBackRateUpdateInit();
                         dice0.playBackRateUpdateStart = true;
@@ -502,11 +518,20 @@ function Home() {
                         dice1.playBackRateUpdateInit();
                         dice1.playBackRateUpdateStart = true;
                     }   
+
+                    if (dice0.getVelocity() < dice0.stopVelocity) {
+                        dice0.diceMoveAnimation?.pause()
+                        dice0.diceTurnAnimation?.pause()
+                    }
+                    if (dice1.getVelocity() < dice1.stopVelocity) {
+                        dice1.diceMoveAnimation?.pause()
+                        dice1.diceTurnAnimation?.pause()
+                    }
                                         
                     allowCollisionControl = false;
                     setTimeout(() => {
                         allowCollisionControl = true;
-                    }, 250);
+                    }, 200);
                 }
                 requestAnimationFrame(impactController);
             }
@@ -524,7 +549,7 @@ function Home() {
             dice1.place();
             register(dice0, dice1);
         }, 100);
-        
+              
     }, [])
 
     return (
