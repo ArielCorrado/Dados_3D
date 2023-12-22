@@ -425,7 +425,7 @@ function Home() {
                 return xDistance <= 0 && yDistance <= 0 && getCentersDistance() <= dice0.diceSize * 1.25 ? true : false;
             }
 
-            let waitCollision = true;
+            let allowCollisionControl = true;
             const impactController = () => {
                 
                 if (dice0.getVelocity() < dice0.stopVelocity && dice1.getVelocity() < dice1.stopVelocity) {         //Los dos dados detenidos, habilitamos el nuevo inicio de la funcion
@@ -433,7 +433,7 @@ function Home() {
                     dice1.playBackRateUpdateStart = false;
                 }
                 
-                if (isCollision() && waitCollision) {
+                if (isCollision() && allowCollisionControl) {
                                                             
                     dice0.diceMoveAnimation?.pause();
                     dice1.diceMoveAnimation?.pause();
@@ -503,9 +503,9 @@ function Home() {
                         dice1.playBackRateUpdateStart = true;
                     }   
                                         
-                    waitCollision = false;
+                    allowCollisionControl = false;
                     setTimeout(() => {
-                        waitCollision = true;
+                        allowCollisionControl = true;
                     }, 250);
                 }
                 requestAnimationFrame(impactController);
