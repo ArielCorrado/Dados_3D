@@ -432,7 +432,6 @@ function Home() {
                     isMouseDown = true;
                 }
 
-
                 this.diceSideExternals?.forEach((side) => {
                     side.addEventListener("pointerdown", pointerdown);
                 })
@@ -541,9 +540,9 @@ function Home() {
                     const lostCollisionVelocity = 0.25;
                     const lostCossisionVelCoef = 1 - lostCollisionVelocity;
                                         
-                    const dice0newVx = (dice1Vx * 0.9 - dice0Vx * 0.1) * lostCossisionVelCoef;  //Perida de velocidad con el impacto entre dados: 1 - 0.6 = 0.4   --->   40%
-                    const dice0newVy = (dice1Vy * 0.9 - dice0Vy * 0.1) * lostCossisionVelCoef;
-                    const dice1newVx = (dice0Vx * 0.9 - dice1Vx * 0.1) * lostCossisionVelCoef;
+                    const dice0newVx = (dice1Vx * 0.9 - dice0Vx * 0.1) * lostCossisionVelCoef;  //*Perida de velocidad con el impacto entre dados: 1 - 0.6 = 0.4   --->   40%
+                    const dice0newVy = (dice1Vy * 0.9 - dice0Vy * 0.1) * lostCossisionVelCoef;  //*Cada dado recibe el 90% de la velocidad del que lo choca y conserva un 10 %
+                    const dice1newVx = (dice0Vx * 0.9 - dice1Vx * 0.1) * lostCossisionVelCoef;  // de su velocidad
                     const dice1newVy = (dice0Vy * 0.9 - dice1Vy * 0.1) * lostCossisionVelCoef;
                                                             
                     let dice0newV = Math.sqrt((dice0newVx ** 2) + (dice0newVy ** 2));
