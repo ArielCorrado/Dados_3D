@@ -62,8 +62,9 @@ function Home() {
                 this.diceSideLightColor = diceSideLightColor;
             }
             
+            allowStopConbtrol = true;
             stopVelocity = 0.6;
-            celeration = - 0.0015;
+            celeration = - 0.0020;
             private Vmax = 4;
             private stopDegreesTolerance = 5;
             private velocityVector = { x: 0, y: 0 };
@@ -206,7 +207,7 @@ function Home() {
            
             stopControlInit = () => {
                 const stopControl = () => {
-                    if (this.getVelocity() < this.stopVelocity) {
+                    if (this.getVelocity() < this.stopVelocity && this.allowStopConbtrol) {
                         const actualYrotation = this.getCurrentYRotation();
                         if (
                             (actualYrotation < this.stopDegreesTolerance && actualYrotation > -this.stopDegreesTolerance) || 
@@ -503,6 +504,13 @@ function Home() {
 
             let allowCollisionControl = true;
             let allowDistanceControl = false
+            let dice0newVx: number = 0;
+            let dice0newVy: number = 0;
+            let dice1newVx: number = 0;
+            let dice1newVy: number = 0;
+            const lostCollisionVelocity = 0.1;
+            const lostCossisionVelCoef = 1 - lostCollisionVelocity;
+
             const impactController = () => {
                 
                 if (dice0.getVelocity() < dice0.stopVelocity) dice0.playBackRateUpdateStart = false;        //Si el dado se detiene habilitamos el reinicio de la funcion "playBackRateUpdate"
@@ -515,14 +523,43 @@ function Home() {
                 
                 if (isCollision() && allowCollisionControl) {
 
-                    allowCollisionControl = false;
-                    allowDistanceControl = true;
-                                    
                     dice0.diceMoveAnimation?.pause();
                     dice1.diceMoveAnimation?.pause();
                     dice0.diceTurnAnimation?.pause();
                     dice1.diceTurnAnimation?.pause();
 
+                    const dice0Vx = dice0.getVelocityVector().x;
+                    const dice0Vy = dice0.getVelocityVector().y;
+                    const dice1Vx = dice1.getVelocityVector().x;
+                    const dice1Vy = dice1.getVelocityVector().y;
+
+                    const dice0Angle = (Math.atan2(dice0Vy, dice0Vx) / Math.PI) * 180;
+                    const dice1Angle = (Math.atan2(dice1Vy, dice1Vx) / Math.PI) * 180;
+
+                    const dice0V = dice0.getVelocity();
+                    const dice1V = dice1.getVelocity();
+                                                          
+                    if (Math.abs(dice0Angle - dice1Angle) < 45 && dice0V > dice0.stopVelocity && dice1V > dice1.stopVelocity) {
+                        if (dice0V > dice1V) {
+                            dice0newVx = dice1Vx * 0.8;  
+                            dice0newVy = dice1Vy * 0.8;  
+                            dice1newVx = dice0Vx * 1.2;  
+                            dice1newVy = dice0Vy * 1.2;
+                        } else {
+                            dice0newVx = dice1Vx * 1.2;  
+                            dice0newVy = dice1Vy * 1.2;  
+                            dice1newVx = dice0Vx * 0.8;  
+                            dice1newVy = dice0Vy * 0.8;    
+                        }
+                    } else {
+                        dice0newVx = (dice1Vx * 0.9 - dice0Vx * 0.1) * lostCossisionVelCoef;  //*Perida de velocidad con el impacto entre dados: 1 - 0.6 = 0.4   --->   40%
+                        dice0newVy = (dice1Vy * 0.9 - dice0Vy * 0.1) * lostCossisionVelCoef;  //*Cada dado recibe el 90% de la velocidad del que lo choca y conserva un 10 %
+                        dice1newVx = (dice0Vx * 0.9 - dice1Vx * 0.1) * lostCossisionVelCoef;  // de su velocidad
+                        dice1newVy = (dice0Vy * 0.9 - dice1Vy * 0.1) * lostCossisionVelCoef;
+                    }
+                    allowDistanceControl = true;
+                    allowCollisionControl = false;
+                                      
                     const dice0Pos = dice0.getPosition();
                     const dice1Pos = dice1.getPosition();
 
@@ -531,20 +568,7 @@ function Home() {
                     
                     dice0CurrentYRotation = dice0.getCloseAxis(dice0CurrentYRotation);
                     dice1CurrentYRotation = dice1.getCloseAxis(dice1CurrentYRotation);
-                                                                                                    
-                    const dice0Vx = dice0.getVelocityVector().x;
-                    const dice0Vy = dice0.getVelocityVector().y;
-                    const dice1Vx = dice1.getVelocityVector().x;
-                    const dice1Vy = dice1.getVelocityVector().y;
-
-                    const lostCollisionVelocity = 0.25;
-                    const lostCossisionVelCoef = 1 - lostCollisionVelocity;
-                                        
-                    const dice0newVx = (dice1Vx * 0.9 - dice0Vx * 0.1) * lostCossisionVelCoef;  //*Perida de velocidad con el impacto entre dados: 1 - 0.6 = 0.4   --->   40%
-                    const dice0newVy = (dice1Vy * 0.9 - dice0Vy * 0.1) * lostCossisionVelCoef;  //*Cada dado recibe el 90% de la velocidad del que lo choca y conserva un 10 %
-                    const dice1newVx = (dice0Vx * 0.9 - dice1Vx * 0.1) * lostCossisionVelCoef;  // de su velocidad
-                    const dice1newVy = (dice0Vy * 0.9 - dice1Vy * 0.1) * lostCossisionVelCoef;
-                                                            
+                                                                                                 
                     let dice0newV = Math.sqrt((dice0newVx ** 2) + (dice0newVy ** 2));
                     let dice1newV = Math.sqrt((dice1newVx ** 2) + (dice1newVy ** 2));
     
@@ -589,13 +613,28 @@ function Home() {
                         dice1.playBackRateUpdateStart = true;
                     }   
 
-                    if (dice0.getVelocity() < dice0.stopVelocity) {
-                        dice0.diceMoveAnimation?.pause()
-                        dice0.diceTurnAnimation?.pause()
+                    if (dice0.getVelocity() < dice0.stopVelocity && dice1.getVelocity() < dice1.stopVelocity) {
+                        dice0.allowStopConbtrol = false;
+                        dice0.diceTurnAnimation?.pause();
+                        setTimeout(() => {
+                            dice0.diceMoveAnimation?.pause()
+                            dice0.allowStopConbtrol = true;
+                        }, (dice0.diceSize / 2) / dice0.stopVelocity);
+
+                        dice1.allowStopConbtrol = false;
+                        dice1.diceTurnAnimation?.pause();
+                        setTimeout(() => {
+                            dice1.diceMoveAnimation?.pause()
+                            dice1.allowStopConbtrol = true;
+                        }, (dice1.diceSize / 2) / dice1.stopVelocity);
                     }
-                    if (dice1.getVelocity() < dice1.stopVelocity) {
+
+                    if (dice1.getVelocity() < dice1.stopVelocity && dice0.getVelocity() > dice0.stopVelocity) {
                         dice1.diceMoveAnimation?.pause()
-                        dice1.diceTurnAnimation?.pause()
+                        dice1.diceTurnAnimation?.pause();
+                    } else if (dice0.getVelocity() < dice0.stopVelocity && dice1.getVelocity() > dice1.stopVelocity) {
+                        dice0.diceMoveAnimation?.pause()
+                        dice0.diceTurnAnimation?.pause();
                     }
                 }
                 requestAnimationFrame(impactController);
