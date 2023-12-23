@@ -46,20 +46,20 @@ function Home() {
             readonly diceSize: number = 100;   // El ancho del dado (en px) tiene que coincidir con el del css 
             private dice: HTMLDivElement | null = null;
             private diceTurnAnimateCont: HTMLDivElement | null = null;
-            private diceSideExternals: NodeListOf<Element> | undefined = undefined;
-            private diceSides: NodeListOf<HTMLDivElement> | undefined = undefined;
+            private diceSideExternals: NodeListOf <HTMLDivElement> | undefined = undefined;
+            private diceSideLightColor: NodeListOf <HTMLDivElement> | undefined = undefined;
             diceMoveAnimation: Animation | undefined = undefined;
             diceTurnAnimation: Animation | undefined = undefined;
 
             private getDomElements = () => {
                 const dice: HTMLDivElement | null = document.querySelector(`.dice${this.number}`);
                 const diceTurnAnimateCont: HTMLDivElement | null = document.querySelector(`.diceTurnAnimateCont${this.number}`);
-                const diceSideExternals = dice?.querySelectorAll(".diceSideExternal");
-                const diceSides: NodeListOf<HTMLDivElement> |  undefined = dice?.querySelectorAll(".diceSide")
+                const diceSideExternals: NodeListOf <HTMLDivElement> | undefined = dice?.querySelectorAll(".diceSideExternal") ;
+                const diceSideLightColor: NodeListOf <HTMLDivElement> | undefined = dice?.querySelectorAll(".diceSideLightColor") ;
                 this.dice = dice;
                 this.diceTurnAnimateCont = diceTurnAnimateCont;
                 this.diceSideExternals = diceSideExternals;
-                this.diceSides = diceSides;
+                this.diceSideLightColor = diceSideLightColor;
             }
             
             stopVelocity = 0.6;
@@ -289,9 +289,69 @@ function Home() {
                 this.getDomElements();
                 this.dice!.style.left = `${this.xPos - (this.diceSize / 2)}px`;          //- (diceSize/2) Para que posicione en el cursor el centro del dado
                 this.dice!.style.top = `${this.yPos - (this.diceSize / 2)}px`;
-                // this.diceSides?.forEach((side) => {
-                //     side.style.backgroundColor = this.color;
-                // })
+
+                /***************************************** Generacion de colores a partir del ingresado al instanciar las clases ************************************/
+
+                const colorHex = this.color;                                            
+                const redHex = colorHex.slice(1, 3);
+                const greenHex = colorHex.slice(3, 5);
+                const blueHex = colorHex.slice(5, 7);
+                                
+                const red10 = parseInt(redHex, 16);
+                const green10 = parseInt(greenHex, 16);
+                const blue10 = parseInt(blueHex, 16);
+                                
+                const newRed10 = red10 + 40 > 255 ? 255 : red10 + 40;
+                const newGreen10 = green10 + 40 > 255 ? 255 : green10 + 40;
+                const newBlue10 = blue10 + 40 > 255 ? 255 : blue10 + 40;
+                const newOpac10 = 128;
+
+                const newRedHex = newRed10.toString(16);
+                const newGreenHex = newGreen10.toString(16);
+                const newBlueHex = newBlue10.toString(16);
+                const newOpacHex = newOpac10.toString(16);
+                
+                const lightColor: {[key: string]: any} = {
+                    red: red10,
+                    green: green10,
+                    blue: blue10,
+                }
+
+                let maxKey = "";
+                for (const key in lightColor) {
+                    if (lightColor[key] > maxKey) {
+                        maxKey = key;
+                    }
+                }
+
+                const originalColor: {[key: string]: any} = {   
+                    red: redHex,
+                    green: greenHex,
+                    blue: blueHex,
+                }
+
+                const lightColorHex: {[key: string]: any} = {
+                    red: newRedHex,
+                    green: newGreenHex,
+                    blue: newBlueHex,
+                    opac: newOpacHex
+                }
+
+                lightColorHex[maxKey] = originalColor[maxKey];
+
+                const finalLightColor = `#${lightColorHex.red}${lightColorHex.green}${lightColorHex.blue}`;
+                const finalColorShadow = `#${lightColorHex.red}${lightColorHex.green}${lightColorHex.blue}${lightColorHex.opac}`;
+                
+                this.diceSideExternals?.forEach((side) => {
+                    side.style.backgroundColor = this.color;
+                    side.style.border = `2px solid ${finalLightColor}`;
+                    side.style.boxShadow = `0px 0px 20px 0px ${finalColorShadow}`;
+                })
+                this.diceSideLightColor?.forEach((side) => {
+                    side.style.backgroundColor = finalLightColor;
+                })
+
+                /**********************************************************************************************************************************************************/
                                
                 let isMouseDown = false;
                 let isMouseOver = false;
@@ -545,7 +605,7 @@ function Home() {
         }
 
         const dice0 = new Dice(0, 960, 500, "#e9759c");
-        const dice1 = new Dice(1, 1500, 500, "blue");
+        const dice1 = new Dice(1, 1500, 500, "#6ec2b0");
 
         setDices([dice0.jsx, dice1.jsx]);
 
