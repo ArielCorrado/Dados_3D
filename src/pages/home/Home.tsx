@@ -75,6 +75,7 @@ function Home() {
             private isReboundRight = false;
             private isReboundTop = false;
             private isReboundBottom = false;
+            animationFrameId = null;
                                                                                 
             setVelocityVector = (x: number, y: number) => {
                 this.velocityVector.x = x;
@@ -399,6 +400,7 @@ function Home() {
             }
 
             const isCollision = (): boolean => {
+
                 const dice0Left = dice0.getSideDistance.left();
                 const dice0Right = dice0.getSideDistance.right();
                 const dice0Width = window.innerWidth - dice0Left - dice0Right;
@@ -441,13 +443,28 @@ function Home() {
             }
 
             let allowCollisionControl = true;
+            let allowDistanceControl = false
+            let animationFrameId: number;
             const impactController = () => {
                 
                 if (dice0.getVelocity() < dice0.stopVelocity) dice0.playBackRateUpdateStart = false;        //Si el dado se detiene habilitamos el reinicio de la funcion "playBackRateUpdate"
                 if (dice1.getVelocity() < dice1.stopVelocity) dice1.playBackRateUpdateStart = false;
+
+                if (dice0.getVelocity() < dice0.stopVelocity && dice1.getVelocity() < dice1.stopVelocity && !allowCollisionControl) {
+                    cancelAnimationFrame(animationFrameId);
+                    console.log("cancel")
+                }
                              
+                if (getCentersDistance() > dice0.diceSize * 1.2 && allowDistanceControl) {
+                    allowCollisionControl = true;
+                    allowDistanceControl = false;
+                }
+
                 if (isCollision() && allowCollisionControl) {
-                                                            
+
+                    allowCollisionControl = false;
+                    allowDistanceControl = true;
+                                    
                     dice0.diceMoveAnimation?.pause();
                     dice1.diceMoveAnimation?.pause();
                     dice0.diceTurnAnimation?.pause();
@@ -461,7 +478,7 @@ function Home() {
                     
                     dice0CurrentYRotation = dice0.getCloseAxis(dice0CurrentYRotation);
                     dice1CurrentYRotation = dice1.getCloseAxis(dice1CurrentYRotation);
-                                                                                                       
+                                                                                                    
                     const dice0Vx = dice0.getVelocityVector().x;
                     const dice0Vy = dice0.getVelocityVector().y;
                     const dice1Vx = dice1.getVelocityVector().x;
@@ -477,7 +494,7 @@ function Home() {
                                                             
                     let dice0newV = Math.sqrt((dice0newVx ** 2) + (dice0newVy ** 2));
                     let dice1newV = Math.sqrt((dice1newVx ** 2) + (dice1newVy ** 2));
-       
+    
                     dice0.oneTurnDuration = (4 * dice0.diceSize) / dice0newV;
                     dice1.oneTurnDuration = (4 * dice1.diceSize) / dice1newV;
                 
@@ -527,16 +544,10 @@ function Home() {
                         dice1.diceMoveAnimation?.pause()
                         dice1.diceTurnAnimation?.pause()
                     }
-                                        
-                    allowCollisionControl = false;
-                    setTimeout(() => {
-                        allowCollisionControl = true;
-                    }, 200);
                 }
-                requestAnimationFrame(impactController);
+                animationFrameId = requestAnimationFrame(impactController);
             }
-
-           requestAnimationFrame(impactController);
+            requestAnimationFrame(impactController);
         }
 
         const dice0 = new Dice(0, 960, 500, "#e9759c");
