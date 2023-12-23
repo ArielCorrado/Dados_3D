@@ -6,7 +6,7 @@
 
 .dice {
     position: absolute;
-    --piece-brightness-color: #f1a0b8;
+    /* --piece-brightness-color: #f1a0b8; */
     --diceSize: 100px;
     width: var(--diceSize);
     height: var(--diceSize);
@@ -28,9 +28,9 @@
     transform-style: preserve-3d;
     width: var(--diceSize);
     height: var(--diceSize);
-    border: 2px solid var(--piece-brightness-color);
+    border: 2px solid rgb(233, 157, 196);
     border-radius: 30px;    
-    background-color: #e9759c;
+    background-color: rgba(233,117,156,1);
 }
 
 .diceSideExternal {
@@ -39,6 +39,10 @@
     background-position: center;
     background-size: 100%;
     cursor: pointer;
+}
+
+.diceSideLightColor {
+    background-color: rgb(233, 157, 196);
 }
 
 .diceSide1 {
@@ -88,19 +92,19 @@
 
 
 .diceSide:nth-child(7) {                               /*Caras internas y cruzadas para que no se vea a traves del dado por las esquinas*/
-    background-color: var(--piece-brightness-color);
+    /* background-color: var(--piece-brightness-color); */
     transform: translateZ(calc(var(--diceSize) / -2)) rotateY(90deg);
     border: none;
     border-radius: initial;
 }
 .diceSide:nth-child(8) {
-    background-color: var(--piece-brightness-color);
+    /* background-color: var(--piece-brightness-color); */
     transform: translateZ(calc(var(--diceSize) / -2));
     border: none;
     border-radius: initial;
 }
 .diceSide:nth-child(9) {
-    background-color: var(--piece-brightness-color);
+    /* background-color: var(--piece-brightness-color); */
     transform: translateZ(calc(var(--diceSize) / -2)) rotateX(90deg);
     border: none;
     border-radius: initial;
@@ -108,30 +112,30 @@
 
 
 .diceSide:nth-child(10) {                              /*Caras externas interiores con el color del brillo para que las esquinas se vean de color claro*/
-    background-color: var(--piece-brightness-color);
+    /* background-color: var(--piece-brightness-color); */
     transform: translateZ(-1px);
 }
 .diceSide:nth-child(11) {
-    background-color: var(--piece-brightness-color);
+    /* background-color: var(--piece-brightness-color); */
     transform-origin: 100%;
     transform: translateX(-1px) rotateY(-90deg);
 }
 .diceSide:nth-child(12) {
-    background-color: var(--piece-brightness-color);
+    /* background-color: var(--piece-brightness-color); */
     transform-origin: 0;
     transform: translateX(1px) rotateY(90deg) ;
 }
 .diceSide:nth-child(13) {
-    background-color: var(--piece-brightness-color);
+    /* background-color: var(--piece-brightness-color); */
     transform-origin: 0 100%;
     transform: translateY(-1px) rotateX(90deg) ;
 }
 .diceSide:nth-child(14) {
-    background-color: var(--piece-brightness-color);
+    /* background-color: var(--piece-brightness-color); */
     transform-origin: 0 0;
     transform: translateY(1px) rotateX(-90deg) ;
 }
 .diceSide:nth-child(15) {
-    background-color: var(--piece-brightness-color);
+    /* background-color: var(--piece-brightness-color); */
     transform: translateZ(calc(1px - var(--diceSize)));
 }

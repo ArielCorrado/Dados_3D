@@ -27,16 +27,16 @@ function Home() {
                         <div className="diceSide diceSideExternal diceSide5 flex"></div>
                         <div className="diceSide diceSideExternal diceSide6 flex"></div>
 
-                        <div className="diceSide flex"></div>
-                        <div className="diceSide flex"></div>
-                        <div className="diceSide flex"></div>
+                        <div className="diceSide diceSideLightColor flex"></div>
+                        <div className="diceSide diceSideLightColor flex"></div>
+                        <div className="diceSide diceSideLightColor flex"></div>
 
-                        <div className="diceSide flex"></div>
-                        <div className="diceSide flex"></div>
-                        <div className="diceSide flex"></div>
-                        <div className="diceSide flex"></div>
-                        <div className="diceSide flex"></div>
-                        <div className="diceSide flex"></div>
+                        <div className="diceSide diceSideLightColor flex"></div>
+                        <div className="diceSide diceSideLightColor flex"></div>
+                        <div className="diceSide diceSideLightColor flex"></div>
+                        <div className="diceSide diceSideLightColor flex"></div>
+                        <div className="diceSide diceSideLightColor flex"></div>
+                        <div className="diceSide diceSideLightColor flex"></div>
                     </div>
                 </div>
             }
@@ -444,22 +444,16 @@ function Home() {
 
             let allowCollisionControl = true;
             let allowDistanceControl = false
-            let animationFrameId: number;
             const impactController = () => {
                 
                 if (dice0.getVelocity() < dice0.stopVelocity) dice0.playBackRateUpdateStart = false;        //Si el dado se detiene habilitamos el reinicio de la funcion "playBackRateUpdate"
                 if (dice1.getVelocity() < dice1.stopVelocity) dice1.playBackRateUpdateStart = false;
-
-                if (dice0.getVelocity() < dice0.stopVelocity && dice1.getVelocity() < dice1.stopVelocity && !allowCollisionControl) {
-                    cancelAnimationFrame(animationFrameId);
-                    console.log("cancel")
-                }
-                             
-                if (getCentersDistance() > dice0.diceSize * 1.2 && allowDistanceControl) {
+                                            
+                if (allowDistanceControl && getCentersDistance() > dice0.diceSize * 1.25) {
                     allowCollisionControl = true;
                     allowDistanceControl = false;
                 }
-
+                
                 if (isCollision() && allowCollisionControl) {
 
                     allowCollisionControl = false;
@@ -545,7 +539,7 @@ function Home() {
                         dice1.diceTurnAnimation?.pause()
                     }
                 }
-                animationFrameId = requestAnimationFrame(impactController);
+                requestAnimationFrame(impactController);
             }
             requestAnimationFrame(impactController);
         }
