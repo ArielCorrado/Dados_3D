@@ -77,6 +77,7 @@ function Home() {
             isReboundRight = false;
             isReboundTop = false;
             isReboundBottom = false;
+            bordersReboundcontrolInitStart = false;
             animationFrameId = null;
                                                                                 
             setVelocityVector = (x: number, y: number) => {
@@ -132,7 +133,7 @@ function Home() {
                 return rotateYAngle; // Return the Y rotation angle in degrees
             }
 
-            getCloseAxis = (rot: number) => {
+            getCloseAxis = (rot: number) => {               //Calcula cual es el angulo mas cercano al que tiene que estar girado el dado para verse "Apoyado" en el plano
                 let currentYRotation = rot;
                 let angle_decimal = (currentYRotation / 90) % 1;
                 let angle_int = (currentYRotation / 90) - angle_decimal
@@ -395,6 +396,7 @@ function Home() {
                             this.setdiceTurnAnimation(this.getCurrentYRotation());
                             this.setdiceMoveAnimation(Vxi, Vyi);
                             this.bordersReboundcontrolInit();
+                            this.bordersReboundcontrolInitStart = true;
                             this.stopControlInit(); 
                             this.stopControlInitStart = true;
                             this.playBackRateUpdateInit();
@@ -461,7 +463,7 @@ function Home() {
                 return Math.sqrt((xDistance ** 2) + (yDistance ** 2));
             }
 
-            const isCollision = (): boolean => {
+            const isCollision = (): boolean => {                        
 
                 const dice0Left = dice0.getSideDistance.left();
                 const dice0Right = dice0.getSideDistance.right();
@@ -538,15 +540,14 @@ function Home() {
                     let dice0CurrentYRotation = dice0.getCurrentYRotation();
                     let dice1CurrentYRotation = dice1.getCurrentYRotation();   
 
-                    dice0newVx = dice1Vx * lostCossisionVelCoef;  //*Perida de velocidad con el impacto entre dados: 1 - 0.6 = 0.4   --->   40%
-                    dice0newVy = dice1Vy * lostCossisionVelCoef;  //*Cada dado recibe el 90% de la velocidad del que lo choca y conserva un 10 %
-                    dice1newVx = dice0Vx * lostCossisionVelCoef;  // de su velocidad
+                    dice0newVx = dice1Vx * lostCossisionVelCoef;    //Al chocar entre si los dados pierden un porcentaje de su velocidad dado por el termino "lostCossisionVelCoef"
+                    dice0newVy = dice1Vy * lostCossisionVelCoef;    //Al chocar entre si los dados se intrecambian sus velocidades
+                    dice1newVx = dice0Vx * lostCossisionVelCoef; 
                     dice1newVy = dice0Vy * lostCossisionVelCoef;
-                  
-                    allowDistanceControl = true;
-                    allowCollisionControl = false;
+                    allowDistanceControl = true;                    //Habilitamos "allowDistanceControl" para controldar que los dados se separen los fuciciente luedo de chocarse, para uqe no queden "pegados" 
+                    allowCollisionControl = false;                  //Deshabilitamos el control de colision hasta que los dados se separen lo suficiente
                                      
-                    dice0CurrentYRotation = dice0.getCloseAxis(dice0CurrentYRotation);
+                    dice0CurrentYRotation = dice0.getCloseAxis(dice0CurrentYRotation);      //Al rebotar entre si los dados comienzan girando desde su angulo de giro mas cercana donde se ven "apoyados" en el plano
                     dice1CurrentYRotation = dice1.getCloseAxis(dice1CurrentYRotation);
                                                                                                  
                     let dice0newV = Math.sqrt((dice0newVx ** 2) + (dice0newVy ** 2));
@@ -561,7 +562,7 @@ function Home() {
                     dice0.setVelocityVector(dice0newVx, dice0newVy);
                     dice1.setVelocityVector(dice1newVx, dice1newVy);
 
-                    dice0.motionDuration = Math.abs((dice0.stopVelocity - dice0newV) / (dice0.celeration)); 
+                    dice0.motionDuration = Math.abs((dice0.stopVelocity - dice0newV) / (dice0.celeration));     // At = Av / a
                     dice1.motionDuration = Math.abs((dice1.stopVelocity - dice1newV) / (dice1.celeration));
 
                     dice0.diceMoveAnimation?.cancel();
@@ -574,30 +575,29 @@ function Home() {
 
                     dice0.setdiceMoveAnimation(dice0newVx, dice0newVy);
                     dice1.setdiceMoveAnimation(dice1newVx, dice1newVy);
-
                     dice0.setdiceTurnAnimation(dice0CurrentYRotation);
                     dice1.setdiceTurnAnimation(dice1CurrentYRotation);
 
-                    // if(!dice0.bordersReboundcontrolInitStart) {
+                    if(!dice0.bordersReboundcontrolInitStart) {             //Si ya llamamos a la funcion "bordersReboundcontrolInit()"" no volvemos a llamarla
                         dice0.bordersReboundcontrolInit();
-                    //     dice0.bordersReboundcontrolInitStart = true;
-                    // } else {
-                    //     dice0.isReboundLeft = false;
-                    //     dice0.isReboundRight = false;
-                    //     dice0.isReboundTop = false;
-                    //     dice0.isReboundBottom = false;
-                    // }
-                    // if(!dice1.bordersReboundcontrolInitStart) {
+                        dice0.bordersReboundcontrolInitStart = true;
+                    } else {
+                        dice0.isReboundLeft = false;                        //Luego de un choque entre dados habilitamos el rebote en cualquier banda
+                        dice0.isReboundRight = false;
+                        dice0.isReboundTop = false;
+                        dice0.isReboundBottom = false;
+                    }
+                    if(!dice1.bordersReboundcontrolInitStart) {
                         dice1.bordersReboundcontrolInit();
-                    //     dice1.bordersReboundcontrolInitStart = true;
-                    // } else {
-                    //     dice1.isReboundLeft = false;
-                    //     dice1.isReboundRight = false;
-                    //     dice1.isReboundTop = false;
-                    //     dice1.isReboundBottom = false;
-                    // }
+                        dice1.bordersReboundcontrolInitStart = true;
+                    } else {
+                        dice1.isReboundLeft = false;
+                        dice1.isReboundRight = false;
+                        dice1.isReboundTop = false;
+                        dice1.isReboundBottom = false;
+                    }
                                        
-                    if (!dice0.stopControlInitStart) {
+                    if (!dice0.stopControlInitStart) {                      //Si ya llamamos a la funcion "stopControlInit()" no volvemos a llamarla
                         dice0.stopControlInit();
                         dice0.stopControlInitStart = true;
                     }
@@ -606,16 +606,16 @@ function Home() {
                         dice1.stopControlInitStart = true;
                     }
            
-                    dice0.playBackRateUpdateInit();
+                    dice0.playBackRateUpdateInit();                         //Luego de cada rebote se reinicia la actualizacion del "playbakcrate" de las animaciones de cada dado
                     dice1.playBackRateUpdateInit();
                       
-                    if (dice0.getVelocity() < dice0.minTurnReboundVelocity && dice1.getVelocity() < dice1.minTurnReboundVelocity) {
-                        dice0.allowStopControl = false;
-                        dice0.diceTurnAnimation?.pause();
-                        setTimeout(() => {
+                    if (dice0.getVelocity() < dice0.minTurnReboundVelocity && dice1.getVelocity() < dice1.minTurnReboundVelocity) {         //Si ambos dados REBOTAN a una velocidad menor que
+                        dice0.allowStopControl = false;                                                                                     // "minTurnReboundVelocity" no giran al rebotar        
+                        dice0.diceTurnAnimation?.pause();                                                                                   // y se mueven una distancia igual a:
+                        setTimeout(() => {                                                                                                  // "dice1.diceSize / 2" (valor arbitrario)
                             dice0.diceMoveAnimation?.pause()
                             dice0.allowStopControl = true;
-                        }, (dice0.diceSize / 2) / dice0.stopVelocity);
+                        }, (dice0.diceSize / 2) / dice0.stopVelocity);                                                                      
 
                         dice1.allowStopControl = false;
                         dice1.diceTurnAnimation?.pause();
@@ -625,8 +625,8 @@ function Home() {
                         }, (dice1.diceSize / 2) / dice1.stopVelocity);
                     }
 
-                    if (dice1.getVelocity() < dice1.stopVelocity && dice0.getVelocity() > dice0.stopVelocity) {     //Si al chocar 
-                        dice1.diceMoveAnimation?.pause()
+                    if (dice1.getVelocity() < dice1.stopVelocity && dice0.getVelocity() > dice0.stopVelocity) {     //Si al chocar entre si alguno de los dados SALE moviendose a menos de
+                        dice1.diceMoveAnimation?.pause()                                                            // "stopVelocity" lo detenemos
                         dice1.diceTurnAnimation?.pause();
                     } else if (dice0.getVelocity() < dice0.stopVelocity && dice1.getVelocity() > dice1.stopVelocity) {
                         dice0.diceMoveAnimation?.pause()
