@@ -573,9 +573,9 @@ function Home() {
                     dice1.diceMoveAnimation?.cancel();
                     dice0.diceTurnAnimation?.cancel();
                     dice1.diceTurnAnimation?.cancel();
-                    document.body.getAnimations({subtree: true}).forEach((animation) => {
-                        animation.cancel();
-                    })
+                    // document.body.getAnimations({subtree: true}).forEach((animation) => {
+                    //     animation.cancel();
+                    // })
 
                     dice0.setdiceMoveAnimation(dice0newVx, dice0newVy);
                     dice1.setdiceMoveAnimation(dice1newVx, dice1newVy);
@@ -642,15 +642,23 @@ function Home() {
             requestAnimationFrame(impactController);
         }
 
-        const dice0 = new Dice(0, 634, 500, "#e9759c");
-        const dice1 = new Dice(1, 1268, 500, "#6ec2b0");
+        const dice0 = new Dice(0, 475, 500, "#e9759c");
+        const dice1 = new Dice(1, 951, 500, "#6ec2b0");
+        const dice2 = new Dice(2, 1426, 500, "#fac928");
 
-        setDices([dice0.jsx, dice1.jsx]);
+        setDices([dice0.jsx, dice1.jsx, dice2.jsx]);
 
         setTimeout(() => {
             dice0.place();
             dice1.place();
-            register(dice0, dice1);
+            dice2.place();
+
+            const dicesArray = [dice0, dice1, dice2]
+            for (let i = 0; i < dicesArray.length - 1; i++) {
+                for (let n = i + 1; n < dicesArray.length; n++) {
+                    register(dicesArray[i], dicesArray[n]);
+                }
+            }
         }, 100);
               
     }, [])
