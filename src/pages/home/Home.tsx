@@ -642,8 +642,8 @@ function Home() {
             requestAnimationFrame(impactController);
         }
 
-        const dice0 = new Dice(0, 960, 500, "#e9759c");
-        const dice1 = new Dice(1, 1500, 500, "#6ec2b0");
+        const dice0 = new Dice(0, 634, 500, "#e9759c");
+        const dice1 = new Dice(1, 1268, 500, "#6ec2b0");
 
         setDices([dice0.jsx, dice1.jsx]);
 
