@@ -223,6 +223,7 @@ function Home() {
                         ) {
                             this.diceTurnAnimation?.pause();
                             this.diceMoveAnimation?.pause();
+                            this.setVelocityVector(0, 0);
                         }
                     }
                     requestAnimationFrame(stopControl);
@@ -573,10 +574,7 @@ function Home() {
                     dice1.diceMoveAnimation?.cancel();
                     dice0.diceTurnAnimation?.cancel();
                     dice1.diceTurnAnimation?.cancel();
-                    // document.body.getAnimations({subtree: true}).forEach((animation) => {
-                    //     animation.cancel();
-                    // })
-
+                 
                     dice0.setdiceMoveAnimation(dice0newVx, dice0newVy);
                     dice1.setdiceMoveAnimation(dice1newVx, dice1newVy);
                     dice0.setdiceTurnAnimation(dice0CurrentYRotation);
@@ -644,7 +642,7 @@ function Home() {
 
         const dice0 = new Dice(0, 475, 500, "#e9759c");
         const dice1 = new Dice(1, 951, 500, "#6ec2b0");
-        const dice2 = new Dice(2, 1426, 500, "#fac928");
+        const dice2 = new Dice(2, 1426, 500, "#FFBF1C");
 
         setDices([dice0.jsx, dice1.jsx, dice2.jsx]);
 
