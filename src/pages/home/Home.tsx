@@ -523,7 +523,7 @@ function Home() {
                                                           
                 if (allowDistanceControl && getCentersDistance() > dice0.diceSize * 1.25) {
                     allowCollisionControl = true;
-                    allowDistanceControl = false;
+                    allowDistanceControl = false; 
                 }
                 
                 if (isCollision() && allowCollisionControl) {
