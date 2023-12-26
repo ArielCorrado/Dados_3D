@@ -65,7 +65,8 @@ function Home() {
             allowStopConbtrol = true;
             stopVelocity = 0.6;
             celeration = - 0.0020;
-            private Vmax = 4;
+            private Vmax = 1.5;
+            notReboundVelocity= 1.5;
             private stopDegreesTolerance = 5;
             private velocityVector = { x: 0, y: 0 };
             private decelerationFuncMin = this.stopVelocity / this.Vmax;
@@ -613,7 +614,7 @@ function Home() {
                         dice1.playBackRateUpdateStart = true;
                     }   
 
-                    if (dice0.getVelocity() < dice0.stopVelocity && dice1.getVelocity() < dice1.stopVelocity) {
+                    if (dice0.getVelocity() < dice0.notReboundVelocity && dice1.getVelocity() < dice1.notReboundVelocity) {
                         dice0.allowStopConbtrol = false;
                         dice0.diceTurnAnimation?.pause();
                         setTimeout(() => {
