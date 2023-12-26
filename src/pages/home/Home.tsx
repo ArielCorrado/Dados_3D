@@ -90,6 +90,7 @@ function Home() {
                 return result > this.decelerationFuncMin ? result : this.decelerationFuncMin * 0.8;
             }
                      
+            allowPlayBackRateUpdateStart = true;
             playBackRateUpdate = () => {
                 const t = Date.now() - this.ti;
                 if (this.diceTurnAnimation && this.diceMoveAnimation) {
@@ -100,10 +101,13 @@ function Home() {
             }    
 
             playBackRateUpdateInit = () => {
-                this.ti = Date.now();
-                requestAnimationFrame(this.playBackRateUpdate);
-            }
-
+                this.ti = Date.now();    
+                if (this.allowPlayBackRateUpdateStart) {
+                    this.allowPlayBackRateUpdateStart = false;
+                    this.playBackRateUpdate();
+                }
+            }          
+            
             getVelocityVector = () => {
                 const t = Date.now() - this.ti;
                 const Vx = this.velocityVector.x * this.decelerationFunc(t);
