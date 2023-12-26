@@ -65,7 +65,7 @@ function Home() {
             allowStopControl = true;
             stopVelocity = 0.6;
             celeration = - 0.0020;
-            private Vmax = 5;
+            private Vmax = 4;
             minTurnReboundVelocity= 1.5;
             private stopDegreesTolerance = 5;
             private velocityVector = { x: 0, y: 0 };
@@ -640,18 +640,20 @@ function Home() {
             requestAnimationFrame(impactController);
         }
 
-        const dice0 = new Dice(0, 475, 500, "#e9759c");
-        const dice1 = new Dice(1, 951, 500, "#6ec2b0");
-        const dice2 = new Dice(2, 1426, 500, "#FFBF1C");
+        const dice0 = new Dice(0, 380, 500, "#e9759c");
+        const dice1 = new Dice(1, 760, 500, "#6ec2b0");
+        const dice2 = new Dice(2, 1140, 500, "#FFBF1C");
+        const dice3 = new Dice(3, 1520, 500, "#D078FF");
 
-        setDices([dice0.jsx, dice1.jsx, dice2.jsx]);
+        setDices([dice0.jsx, dice1.jsx, dice2.jsx, dice3.jsx]);
 
         setTimeout(() => {
             dice0.place();
             dice1.place();
             dice2.place();
+            dice3.place();
 
-            const dicesArray = [dice0, dice1, dice2]
+            const dicesArray = [dice0, dice1, dice2, dice3]
             for (let i = 0; i < dicesArray.length - 1; i++) {
                 for (let n = i + 1; n < dicesArray.length; n++) {
                     register(dicesArray[i], dicesArray[n]);
