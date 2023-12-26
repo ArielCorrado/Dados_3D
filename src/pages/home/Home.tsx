@@ -519,8 +519,8 @@ function Home() {
             let dice1newVy: number = 0;
             const lostCollisionVelocity = 0.2;
             const lostCossisionVelCoef = 1 - lostCollisionVelocity;
-
-            const impactController = () => {
+ 
+            const impactController = () => { 
                                                           
                 if (allowDistanceControl && getCentersDistance() > dice0.diceSize * 1.25) {
                     allowCollisionControl = true;
