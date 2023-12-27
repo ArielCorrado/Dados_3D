@@ -65,7 +65,7 @@ function Home() {
             allowStopControl = true;
             stopVelocity = 0.6;
             celeration = - 0.0020;
-            private Vmax = 2.5;
+            private Vmax = 4;
             minTurnReboundVelocity= 1.5;
             private stopDegreesTolerance = 5;
             private velocityVector = { x: 0, y: 0 };
@@ -77,6 +77,8 @@ function Home() {
             isReboundRight = false;
             isReboundTop = false;
             isReboundBottom = false;
+            reboundSide: SideRebound = null;
+
             bordersReboundcontrolInitStart = false;
             animationFrameId = null;
                                                                                 
@@ -238,34 +240,34 @@ function Home() {
                 this.isReboundTop = false;
                 this.isReboundBottom = false;
                               
-                let reboundSide: SideRebound = null;
+                this.reboundSide = null;
                 const reboundControl = () => {
                     
                     if (this.getSideDistance.left() <= 0 && !this.isReboundLeft) {
-                        reboundSide = "left"
+                        this.reboundSide = "left"
                     } else if (this.getSideDistance.right() <= 0 && !this.isReboundRight) {
-                        reboundSide = "right";
+                        this.reboundSide = "right";
                     } else if (this.getSideDistance.top() <= 0 && !this.isReboundTop) {
-                        reboundSide = "top";
+                        this.reboundSide = "top";
                     } else if (this.getSideDistance.bottom() <= 0 && !this.isReboundBottom) {
-                        reboundSide = "bottom";
+                        this.reboundSide = "bottom";
                     } else {
-                        reboundSide = null;
+                        this.reboundSide = null;
                     }
 
-                    if (reboundSide) {
+                    if (this.reboundSide) {
                         
                         const impactPosition = { x: this.getPosition().x, y: this.getPosition().y };
                         const impactCurrentYRotation = this.getCurrentYRotation();
 
-                        if (reboundSide === "left" || reboundSide === "right") {
+                        if (this.reboundSide === "left" || this.reboundSide === "right") {
                             this.setPosition(impactPosition.x, impactPosition.y);
                             this.setVelocityVector(-this.velocityVector.x, this.velocityVector.y);
                             this.diceTurnAnimation?.cancel();
                             this.diceMoveAnimation?.cancel();
                             this.setdiceTurnAnimation(impactCurrentYRotation);
                             this.setdiceMoveAnimation(this.velocityVector.x, this.velocityVector.y);
-                            if (reboundSide === "left") {
+                            if (this.reboundSide === "left") {
                                 this.isReboundRight = false;
                                 this.isReboundLeft = true;
                             } else {
@@ -273,14 +275,14 @@ function Home() {
                                 this.isReboundLeft = false;
                             }
                           
-                        } else if (reboundSide === "top" || reboundSide === "bottom") {
+                        } else if (this.reboundSide === "top" || this.reboundSide === "bottom") {
                             this.setPosition(impactPosition.x, impactPosition.y);
                             this.setVelocityVector(this.velocityVector.x, -this.velocityVector.y);
                             this.diceTurnAnimation?.cancel();
                             this.diceMoveAnimation?.cancel();
                             this.setdiceTurnAnimation(impactCurrentYRotation);
                             this.setdiceMoveAnimation(this.velocityVector.x, this.velocityVector.y);
-                            if (reboundSide === "top") {
+                            if (this.reboundSide === "top") {
                                 this.isReboundTop = true;
                                 this.isReboundBottom = false;
                             } else {
@@ -522,7 +524,7 @@ function Home() {
  
             const impactController = () => { 
                                                           
-                if (allowDistanceControl && getCentersDistance() > dice0.diceSize * 1.25) {
+                if ((allowDistanceControl && getCentersDistance() > dice0.diceSize * 1.25)) {
                     allowCollisionControl = true;
                     allowDistanceControl = false; 
                 }
@@ -549,6 +551,7 @@ function Home() {
                     dice0newVy = dice1Vy * lostCossisionVelCoef;    //Al chocar entre si los dados se intrecambian sus velocidades
                     dice1newVx = dice0Vx * lostCossisionVelCoef; 
                     dice1newVy = dice0Vy * lostCossisionVelCoef;
+
                     allowDistanceControl = true;                    //Habilitamos "allowDistanceControl" para controldar que los dados se separen los fuciciente luedo de chocarse, para uqe no queden "pegados" 
                     allowCollisionControl = false;                  //Deshabilitamos el control de colision hasta que los dados se separen lo suficiente
                                      
