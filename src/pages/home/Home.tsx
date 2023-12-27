@@ -65,7 +65,7 @@ function Home() {
             allowStopControl = true;
             stopVelocity = 0.6;
             celeration = - 0.0020;
-            private Vmax = 4;
+            private Vmax = 2.5;
             minTurnReboundVelocity= 1.5;
             private stopDegreesTolerance = 5;
             private velocityVector = { x: 0, y: 0 };
