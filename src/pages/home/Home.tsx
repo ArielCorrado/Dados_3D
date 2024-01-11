@@ -356,7 +356,7 @@ function Home() {
                 this.diceSideExternals?.forEach((side) => {
                     side.style.backgroundColor = this.color;
                     side.style.border = `2px solid ${finalLightColor}`;
-                    side.style.boxShadow = `0px 0px 20px 0px ${finalColorShadow}`;
+                    side.style.boxShadow = `0px 0px 10px 0px ${finalColorShadow}`;
                 })
                 this.diceSideLightColor?.forEach((side) => {
                     side.style.backgroundColor = finalLightColor;
@@ -643,10 +643,10 @@ function Home() {
             requestAnimationFrame(impactController);
         }
 
-        const dice0 = new Dice(0, 380, 500, "#e9759c");
-        const dice1 = new Dice(1, 760, 500, "#6ec2b0");
-        const dice2 = new Dice(2, 1140, 500, "#FFBF1C");
-        const dice3 = new Dice(3, 1520, 500, "#DA94FF");
+        const dice0 = new Dice(0, 200, 500, "#e9759c");
+        const dice1 = new Dice(1, 900, 500, "#6ec2b0");
+        const dice2 = new Dice(2, 1100, 500, "#FFBF1C");
+        const dice3 = new Dice(3, 1300, 500, "#DA94FF");
 
         setDices([dice0.jsx, dice1.jsx, dice2.jsx, dice3.jsx]);
 
